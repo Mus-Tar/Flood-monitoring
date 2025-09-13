@@ -12,9 +12,10 @@ const routes = [
   { path: '/import', component: () => import('../views/DataImport.vue') },
   { path: '/thresholds', component: () => import('../views/Thresholds.vue') },
   { path: '/warnings', component: () => import('../views/Warnings.vue') },
-
-  // 新增：历史趋势
   { path: '/history', component: () => import('../views/History.vue') },
+
+  // 新增：GIS 地图
+  { path: '/gis', component: () => import('../views/GIS.vue') },
 ]
 
 const router = createRouter({
