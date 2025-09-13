@@ -11,6 +11,10 @@
           <!-- 新增的 -->
           <router-link to="/points" class="text-blue-600 hover:underline">监测点</router-link>
           <router-link to="/import" class="text-blue-600 hover:underline">数据导入</router-link>
+
+          <router-link to="/thresholds" class="text-blue-600 hover:underline">阈值配置</router-link>
+          <router-link to="/warnings" class="text-blue-600 hover:underline">预警列表</router-link>
+
         </nav>
       </div>
     </header>

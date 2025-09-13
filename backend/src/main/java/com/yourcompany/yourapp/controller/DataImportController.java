@@ -4,6 +4,7 @@ import com.yourcompany.yourapp.entity.MonitorData;
 import com.yourcompany.yourapp.entity.MonitoringPoint;
 import com.yourcompany.yourapp.service.MonitorDataService;
 import com.yourcompany.yourapp.service.MonitoringPointService;
+import com.yourcompany.yourapp.service.ThresholdEvaluatorService;
 import com.yourcompany.yourapp.util.R;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -28,15 +29,11 @@ public class DataImportController {
     private MonitorDataService dataService;
     @Resource
     private MonitoringPointService pointService;
+    @Resource
+    private ThresholdEvaluatorService evaluator; // 新增
 
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /**
-     * 单点导入：
-     * 必填列：timestamp, water_level, rainfall
-     * 可选列：flow
-     * 支持 CSV 与 Excel(.xlsx)
-     */
     @PostMapping
     public R importForOnePoint(@RequestParam Long pointId, @RequestParam MultipartFile file) throws IOException {
         MonitoringPoint p = pointService.getById(pointId);
@@ -48,12 +45,10 @@ public class DataImportController {
 
         if (name.endsWith(".csv")) {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-                String header = br.readLine(); // 跳过标题
-                String line;
-                int lineNo = 1;
+                String header = br.readLine();
+                String line; int lineNo = 1;
                 while ((line = br.readLine()) != null) {
-                    lineNo++;
-                    total++;
+                    lineNo++; total++;
                     String[] arr = line.split(",");
                     if (arr.length < 3) { fail++; errors.add("第"+lineNo+"行列数不足（至少3列）"); continue; }
                     try {
@@ -69,6 +64,10 @@ public class DataImportController {
                         md.setRainfall(rf);
                         md.setFlow(fl);
                         dataService.save(md);
+
+                        // 新增：导入后评估阈值
+                        evaluator.evaluateForData(md);
+
                         ok++;
                     } catch (Exception ex) {
                         fail++; errors.add("第"+lineNo+"行解析失败: " + ex.getMessage());
@@ -102,7 +101,7 @@ public class DataImportController {
                     String tsStr = getCellString(r.getCell(0)).trim();
                     String wlStr = getCellString(r.getCell(1)).trim();
                     String rfStr = getCellString(r.getCell(2)).trim();
-                    String flStr = getCellString(r.getCell(3)).trim(); // 可为空
+                    String flStr = getCellString(r.getCell(3)).trim();
 
                     LocalDateTime ts = LocalDateTime.parse(tsStr, DF);
                     Double wl = wlStr.isEmpty() ? null : Double.valueOf(wlStr);
@@ -116,6 +115,10 @@ public class DataImportController {
                     md.setRainfall(rf);
                     md.setFlow(fl);
                     dataService.save(md);
+
+                    // 新增：导入后评估阈值
+                    evaluator.evaluateForData(md);
+
                     ok++;
                 } catch (Exception ex) {
                     errors.add("第"+(i+1)+"行解析失败: " + ex.getMessage());
