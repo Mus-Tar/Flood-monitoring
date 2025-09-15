@@ -1,86 +1,281 @@
 <template>
-  <div class="bg-white p-4 rounded-lg shadow space-y-4">
-    <h2 class="text-lg font-semibold">历史查询与趋势图</h2>
-
-    <!-- 查询条件 -->
-    <div class="grid md:grid-cols-4 gap-4">
-      <div>
-        <label class="block text-sm mb-1">监测点</label>
-        <select v-model="pointId" class="w-full border rounded px-3 py-2">
-          <option disabled value="">请选择监测点</option>
-          <option v-for="p in points" :key="p.id" :value="p.id">{{ p.name }}（{{ p.type || '无类型' }}）</option>
-        </select>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
+    <div class="max-w-7xl mx-auto space-y-6">
+      <!-- 页面标题 -->
+      <div class="mb-6">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900">历史数据分析</h1>
+        </div>
+        <p class="text-gray-600">查看监测点的历史数据趋势图，分析变化规律</p>
       </div>
 
-      <div>
-        <label class="block text-sm mb-1">开始时间</label>
-        <input type="datetime-local" v-model="startLocal" class="w-full border rounded px-3 py-2"/>
+      <!-- 查询条件卡片 -->
+      <div class="bg-white rounded-lg shadow-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <h2 class="text-lg font-semibold text-gray-900">查询条件</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-4 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">监测点</label>
+            <select 
+              v-model="pointId" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            >
+              <option disabled value="">请选择监测点</option>
+              <option v-for="p in points" :key="p.id" :value="p.id">
+                {{ p.name }} ({{ p.type || '无类型' }})
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">开始时间</label>
+            <input 
+              type="datetime-local" 
+              v-model="startLocal" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">结束时间</label>
+            <input 
+              type="datetime-local" 
+              v-model="endLocal" 
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            />
+          </div>
+
+          <div class="flex flex-col">
+            <label class="block text-sm font-medium text-gray-700 mb-2">快速选择</label>
+            <div class="flex gap-2">
+              <button 
+                class="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors" 
+                @click="setQuickRange(6)"
+              >
+                6小时
+              </button>
+              <button 
+                class="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors" 
+                @click="setQuickRange(24)"
+              >
+                24小时
+              </button>
+              <button 
+                class="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors" 
+                @click="setQuickRange(72)"
+              >
+                3天
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 图表选项 -->
+        <div class="mt-6 pt-4 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <span class="text-sm font-medium text-gray-700">显示数据:</span>
+              
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="show.waterLevel"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span class="flex items-center gap-2 text-sm text-gray-700">
+                  <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  水位（m）
+                </span>
+              </label>
+              
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="show.rainfall"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span class="flex items-center gap-2 text-sm text-gray-700">
+                  <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                  雨量（mm）
+                </span>
+              </label>
+              
+              <label class="inline-flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="show.flow"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span class="flex items-center gap-2 text-sm text-gray-700">
+                  <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  流量（m³/s）
+                </span>
+              </label>
+            </div>
+            
+            <button 
+              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2 font-medium" 
+              @click="query"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              查询分析
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label class="block text-sm mb-1">结束时间</label>
-        <input type="datetime-local" v-model="endLocal" class="w-full border rounded px-3 py-2"/>
+      <!-- 图表展示卡片 -->
+      <div class="bg-white rounded-lg shadow-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
+            </svg>
+            <h2 class="text-lg font-semibold text-gray-900">趋势分析图</h2>
+          </div>
+          <div v-if="data.length" class="text-sm text-gray-500">
+            数据点数: {{ data.length }}
+          </div>
+        </div>
+        
+        <!-- 图表容器 -->
+        <div class="bg-gray-50 rounded-lg p-4" style="min-height: 420px;">
+          <div ref="chartRef" class="w-full" style="height: 420px;"></div>
+        </div>
       </div>
 
-      <div class="flex items-end gap-2">
-        <button class="px-3 py-2 bg-gray-100 border rounded" @click="setQuickRange(6)">近6小时</button>
-        <button class="px-3 py-2 bg-gray-100 border rounded" @click="setQuickRange(24)">近24小时</button>
-        <button class="px-3 py-2 bg-gray-100 border rounded" @click="setQuickRange(72)">近72小时</button>
+      <!-- 统计信息卡片 -->
+      <div v-if="stats && data.length" class="bg-white rounded-lg shadow-xl p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V9a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2z"></path>
+          </svg>
+          <h2 class="text-lg font-semibold text-gray-900">数据统计</h2>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+          <div v-if="stats.waterLevel" class="bg-blue-50 rounded-lg p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                </svg>
+              </div>
+              <h3 class="font-medium text-gray-900">水位统计</h3>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">最高值:</span>
+                <span class="font-medium text-blue-700">{{ stats.waterLevel.max }} m</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">最低值:</span>
+                <span class="font-medium text-blue-700">{{ stats.waterLevel.min }} m</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">平均值:</span>
+                <span class="font-medium text-blue-700">{{ stats.waterLevel.avg }} m</span>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="stats.rainfall" class="bg-green-50 rounded-lg p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+              </div>
+              <h3 class="font-medium text-gray-900">雨量统计</h3>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">累计雨量:</span>
+                <span class="font-medium text-green-700">{{ stats.rainfall.sum }} mm</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">平均雨量:</span>
+                <span class="font-medium text-green-700">{{ stats.rainfall.avg }} mm</span>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="stats.flow" class="bg-purple-50 rounded-lg p-4">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </div>
+              <h3 class="font-medium text-gray-900">流量统计</h3>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">最大流量:</span>
+                <span class="font-medium text-purple-700">{{ stats.flow.max }} m³/s</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">最小流量:</span>
+                <span class="font-medium text-purple-700">{{ stats.flow.min }} m³/s</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">平均流量:</span>
+                <span class="font-medium text-purple-700">{{ stats.flow.avg }} m³/s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据预览 -->
+      <div class="bg-white rounded-lg shadow-xl">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <details class="group">
+            <summary class="cursor-pointer flex items-center gap-2 text-lg font-semibold text-gray-900 hover:text-blue-600">
+              <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+              原始数据预览 (前100条)
+            </summary>
+            
+            <div class="mt-4">
+              <div class="overflow-auto border border-gray-200 rounded-lg">
+                <table class="min-w-full text-sm divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">水位 (m)</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">雨量 (mm)</th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">流量 (m³/s)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="(row, i) in data.slice(0, 100)" :key="i" class="hover:bg-gray-50">
+                      <td class="px-4 py-3 whitespace-nowrap text-gray-900 font-mono">{{ row.timestamp }}</td>
+                      <td class="px-4 py-3 text-center">{{ row.waterLevel ?? '-' }}</td>
+                      <td class="px-4 py-3 text-center">{{ row.rainfall ?? '-' }}</td>
+                      <td class="px-4 py-3 text-center">{{ row.flow ?? '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
-
-    <!-- 选择曲线 -->
-    <div class="flex items-center gap-4">
-      <label class="inline-flex items-center gap-2">
-        <input type="checkbox" v-model="show.waterLevel">
-        <span>水位（m）</span>
-      </label>
-      <label class="inline-flex items-center gap-2">
-        <input type="checkbox" v-model="show.rainfall">
-        <span>雨量（mm）</span>
-      </label>
-      <label class="inline-flex items-center gap-2">
-        <input type="checkbox" v-model="show.flow">
-        <span>流量（m³/s）</span>
-      </label>
-      <button class="ml-auto px-4 py-2 bg-blue-600 text-white rounded" @click="query">查询</button>
-    </div>
-
-    <!-- 图表 -->
-    <div ref="chartRef" class="w-full" style="height: 420px;"></div>
-
-    <!-- 简要统计 -->
-    <div v-if="stats && data.length" class="text-sm text-gray-600">
-      <span class="mr-4">样本数：{{ data.length }}</span>
-      <span v-if="stats.waterLevel">水位 max/min：{{ stats.waterLevel.max }} / {{ stats.waterLevel.min }}</span>
-      <span v-if="stats.rainfall" class="ml-4">雨量总和：{{ stats.rainfall.sum }}</span>
-      <span v-if="stats.flow" class="ml-4">流量 max/min：{{ stats.flow.max }} / {{ stats.flow.min }}</span>
-    </div>
-
-    <!-- 数据预览（前100行） -->
-    <details class="mt-2">
-      <summary class="cursor-pointer text-sm text-gray-700">展开查看原始数据（前100）</summary>
-      <div class="overflow-auto border rounded mt-2">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-100">
-          <tr>
-            <th class="px-3 py-2 border">时间</th>
-            <th class="px-3 py-2 border">水位</th>
-            <th class="px-3 py-2 border">雨量</th>
-            <th class="px-3 py-2 border">流量</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="(row, i) in data.slice(0,100)" :key="i">
-            <td class="px-3 py-2 border whitespace-nowrap">{{ row.timestamp }}</td>
-            <td class="px-3 py-2 border">{{ row.waterLevel ?? '' }}</td>
-            <td class="px-3 py-2 border">{{ row.rainfall ?? '' }}</td>
-            <td class="px-3 py-2 border">{{ row.flow ?? '' }}</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
   </div>
 </template>
 
@@ -138,28 +333,45 @@ function setQuickRange(hours) {
 }
 
 async function query() {
-  if (!pointId.value) { alert('请选择监测点'); return }
-  const start = fromLocalInput(startLocal.value) // Date
+  if (!pointId.value) { 
+    alert('请选择监测点')
+    return 
+  }
+  
+  const start = fromLocalInput(startLocal.value)
   const end = fromLocalInput(endLocal.value)
-  if (!start || !end || start >= end) { alert('时间范围不正确'); return }
+  if (!start || !end || start >= end) { 
+    alert('时间范围不正确')
+    return 
+  }
 
-  const { data: resp } = await request.get('/api/monitor-data', {
-    params: {
-      pointId: pointId.value,
-      start: fmtBackend(start),
-      end: fmtBackend(end),
+  try {
+    const { data: resp } = await request.get('/api/monitor-data', {
+      params: {
+        pointId: pointId.value,
+        start: fmtBackend(start),
+        end: fmtBackend(end),
+      }
+    })
+    
+    if (resp.code !== 0) { 
+      alert(resp.msg || '查询失败')
+      return 
     }
-  })
-  if (resp.code !== 0) { alert(resp.msg || '查询失败'); return }
 
-  data.value = resp.data || []
-  // 自动抽样，避免一次渲染过多点
-  const simplified = decimate(data.value, 5000)
+    data.value = resp.data || []
+    
+    // 自动抽样，避免一次渲染过多点
+    const simplified = decimate(data.value, 5000)
 
-  // 计算简单统计
-  stats.value = computeStats(data.value)
+    // 计算简单统计
+    stats.value = computeStats(data.value)
 
-  renderChart(simplified)
+    renderChart(simplified)
+  } catch (error) {
+    console.error('查询失败:', error)
+    alert('查询失败，请检查网络连接')
+  }
 }
 
 function renderChart(rows) {
@@ -181,6 +393,8 @@ function renderChart(rows) {
     yAxisIndex: 0,
     showSymbol: false,
     smooth: true,
+    lineStyle: { width: 2, color: '#3B82F6' },
+    areaStyle: { color: 'rgba(59, 130, 246, 0.1)' },
     data: wl
   })
   if (hasFL) series.push({
@@ -189,43 +403,88 @@ function renderChart(rows) {
     yAxisIndex: 0,
     showSymbol: false,
     smooth: true,
+    lineStyle: { width: 2, color: '#8B5CF6' },
     data: fl
   })
   if (hasRF) series.push({
     name: '雨量(mm)',
-    type: 'line',
+    type: 'bar',
     yAxisIndex: 1,
-    showSymbol: false,
-    smooth: true,
+    itemStyle: { color: '#10B981' },
+    barMaxWidth: 10,
     data: rf
   })
 
   const option = {
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-    legend: { top: 8 },
-    grid: { left: 60, right: 60, top: 40, bottom: 80 },
+    tooltip: { 
+      trigger: 'axis', 
+      axisPointer: { type: 'cross' },
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#e5e7eb',
+      borderWidth: 1,
+      textStyle: { color: '#374151' }
+    },
+    legend: { 
+      top: 8,
+      itemGap: 20,
+      textStyle: { color: '#374151' }
+    },
+    grid: { 
+      left: 80, 
+      right: 80, 
+      top: 50, 
+      bottom: 100,
+      containLabel: true
+    },
     dataZoom: [
-      { type: 'inside' },
-      { type: 'slider', height: 24, bottom: 24 }
+      { 
+        type: 'inside',
+        xAxisIndex: 0,
+        filterMode: 'none'
+      },
+      { 
+        type: 'slider', 
+        height: 30, 
+        bottom: 30,
+        backgroundColor: '#f8fafc',
+        borderColor: '#e5e7eb',
+        fillerColor: 'rgba(59, 130, 246, 0.2)',
+        handleStyle: { color: '#3B82F6' },
+        textStyle: { color: '#6b7280' }
+      }
     ],
     xAxis: {
       type: 'time',
-      axisLabel: { formatter: (v) => fmtTick(new Date(v)) }
+      axisLabel: { 
+        formatter: (v) => fmtTick(new Date(v)),
+        color: '#6b7280'
+      },
+      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisTick: { lineStyle: { color: '#e5e7eb' } }
     },
     yAxis: [
       {
         type: 'value',
         name: '水位/流量',
+        nameTextStyle: { color: '#374151' },
         position: 'left',
         scale: true,
-        splitLine: { show: true }
+        splitLine: { 
+          show: true,
+          lineStyle: { color: '#f3f4f6', type: 'dashed' }
+        },
+        axisLabel: { color: '#6b7280' },
+        axisLine: { lineStyle: { color: '#e5e7eb' } }
       },
       {
         type: 'value',
         name: '雨量',
+        nameTextStyle: { color: '#374151' },
         position: 'right',
         scale: true,
-        splitLine: { show: false }
+        splitLine: { show: false },
+        axisLabel: { color: '#6b7280' },
+        axisLine: { lineStyle: { color: '#e5e7eb' } }
       }
     ],
     series
@@ -278,19 +537,41 @@ function strToDate(s) {
 }
 // 统计信息
 function computeStats(rows) {
-  const res = {}
-  const col = (k) => rows.map(r => r[k]).filter(v => v!=null)
-  const max = (arr) => arr.length ? Math.max(...arr) : null
-  const min = (arr) => arr.length ? Math.min(...arr) : null
-  const sum = (arr) => arr.reduce((a,b)=>a+b,0)
+  if (!rows || rows.length === 0) {
+    return {
+      count: 0,
+      waterLevel: { max: 0, min: 0, avg: 0 },
+      rainfall: { sum: 0, avg: 0 },
+      flow: { max: 0, min: 0, avg: 0 }
+    }
+  }
+
+  const res = { count: rows.length }
+  const col = (k) => rows.map(r => r[k]).filter(v => v != null && !isNaN(v))
+  const max = (arr) => arr.length ? Math.max(...arr) : 0
+  const min = (arr) => arr.length ? Math.min(...arr) : 0
+  const sum = (arr) => arr.reduce((a, b) => a + b, 0)
+  const avg = (arr) => arr.length ? sum(arr) / arr.length : 0
 
   const wl = col('waterLevel')
   const rf = col('rainfall')
   const fl = col('flow')
 
-  if (wl.length) res.waterLevel = { max: round(max(wl)), min: round(min(wl)) }
-  if (rf.length) res.rainfall   = { sum: round(sum(rf)) }
-  if (fl.length) res.flow       = { max: round(max(fl)), min: round(min(fl)) }
+  res.waterLevel = { 
+    max: round(max(wl)), 
+    min: round(min(wl)),
+    avg: round(avg(wl))
+  }
+  res.rainfall = { 
+    sum: round(sum(rf)),
+    avg: round(avg(rf))
+  }
+  res.flow = { 
+    max: round(max(fl)), 
+    min: round(min(fl)),
+    avg: round(avg(fl))
+  }
+
   return res
 }
 function round(v) { return v==null ? null : Math.round(v*100)/100 }
@@ -304,4 +585,3 @@ function decimate(rows, maxPoints=5000) {
   return out
 }
 </script>
->
