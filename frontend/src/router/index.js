@@ -13,9 +13,10 @@ const routes = [
   { path: '/thresholds', component: () => import('../views/Thresholds.vue') },
   { path: '/warnings', component: () => import('../views/Warnings.vue') },
   { path: '/history', component: () => import('../views/History.vue') },
-
-  // 新增：GIS 地图
   { path: '/gis', component: () => import('../views/GIS.vue') },
+
+  // 新增：预测工作台（伪预测）
+  { path: '/forecast', component: () => import('../views/ForecastStudio.vue') },
 ]
 
 const router = createRouter({

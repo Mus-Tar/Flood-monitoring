@@ -16,6 +16,8 @@
           <router-link to="/warnings" class="text-blue-600 hover:underline">预警列表</router-link>
           <router-link to="/history" class="text-blue-600 hover:underline">历史趋势</router-link>
           <router-link to="/gis" class="text-blue-600 hover:underline">GIS 地图</router-link>
+          <router-link to="/forecast" class="text-blue-600 hover:underline">预测工作台</router-link>
+
 
 
 
