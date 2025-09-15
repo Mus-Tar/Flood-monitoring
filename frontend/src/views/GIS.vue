@@ -1,27 +1,37 @@
 <template>
-  <div class="grid grid-cols-12 gap-4">
-    <!-- 侧栏：站点列表与操作 -->
-    <div class="col-span-12 lg:col-span-4">
-      <div class="bg-white rounded-lg shadow p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold">监测点地图</h2>
-          <div class="space-x-2">
-            <button class="px-3 py-1 text-sm bg-gray-100 border rounded" @click="reload">刷新</button>
-            <button class="px-3 py-1 text-sm bg-gray-100 border rounded" @click="toggleFilterOnly">
-              地图仅显示筛选: <b>{{ filterOnlyOnMap ? '是' : '否' }}</b>
-            </button>
-          </div>
-        </div>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- 页面标题 -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">GIS地理信息系统</h1>
+        <p class="text-gray-600">管理监测点位置信息，可视化展示地理分布</p>
+      </div>
+      
+      <div class="grid grid-cols-12 gap-6">
+        <!-- 侧栏：站点列表与操作 -->
+        <div class="col-span-12 lg:col-span-4">
+          <div class="bg-white rounded-lg shadow-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-semibold text-gray-900">监测点地图</h2>
+              <div class="flex gap-2">
+                <button class="px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors" @click="reload">刷新</button>
+                <button class="px-3 py-2 text-sm border rounded-lg transition-colors"
+                        :class="filterOnlyOnMap ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'"
+                        @click="toggleFilterOnly">
+                  地图仅显示筛选: <b>{{ filterOnlyOnMap ? '是' : '否' }}</b>
+                </button>
+              </div>
+            </div>
 
-        <div class="flex items-center gap-2">
-          <input
-              v-model="keyword"
-              @keyup.enter="applyFilter"
-              placeholder="按名称/类型/流域筛选"
-              class="border rounded px-3 py-2 w-full"
-          />
-          <button class="px-3 py-2 bg-gray-100 border rounded" @click="applyFilter">搜索</button>
-        </div>
+            <div class="flex items-center gap-2 mb-4">
+              <input
+                  v-model="keyword"
+                  @keyup.enter="applyFilter"
+                  placeholder="按名称/类型/流域筛选"
+                  class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              />
+              <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" @click="applyFilter">搜索</button>
+            </div>
 
         <div class="max-h-[520px] overflow-auto border rounded">
           <table class="min-w-full text-sm">
@@ -134,6 +144,8 @@
         <button class="px-3 py-2" @click="adder.show=false">取消</button>
         <button class="px-3 py-2 bg-green-600 text-white rounded" @click="saveAdd">保存</button>
       </div>
+    </div>
+  </div>
     </div>
   </div>
 </template>
