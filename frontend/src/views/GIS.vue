@@ -3,10 +3,18 @@
     <div class="max-w-7xl mx-auto">
       <!-- 页面标题 -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">GIS地理信息系统</h1>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900">GIS地理信息系统</h1>
+        </div>
         <p class="text-gray-600">管理监测点位置信息，可视化展示地理分布</p>
       </div>
-      
+
       <div class="grid grid-cols-12 gap-6">
         <!-- 侧栏：站点列表与操作 -->
         <div class="col-span-12 lg:col-span-4">
@@ -33,119 +41,207 @@
               <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" @click="applyFilter">搜索</button>
             </div>
 
-        <div class="max-h-[520px] overflow-auto border rounded">
-          <table class="min-w-full text-sm">
-            <thead class="bg-gray-50 sticky top-0">
-            <tr>
-              <th class="px-3 py-2 border w-14">#</th>
-              <th class="px-3 py-2 border">名称</th>
-              <th class="px-3 py-2 border">状态</th>
-              <th class="px-3 py-2 border w-44">操作</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="(p,idx) in shownPoints" :key="p.id" class="hover:bg-gray-50">
-              <td class="px-3 py-2 border">{{ idx + 1 }}</td>
-              <td class="px-3 py-2 border">
-                <div class="font-medium">{{ p.name }}</div>
-                <div class="text-gray-500">{{ p.type || '未分类' }}</div>
-              </td>
-              <td class="px-3 py-2 border">
-                <span v-if="coordOf(p)" class="inline-flex items-center text-green-700">已定位</span>
-                <span v-else class="inline-flex items-center text-red-600">未定位</span>
-              </td>
-              <td class="px-3 py-2 border space-x-2">
-                <button class="px-2 py-1 text-white bg-blue-600 rounded" :disabled="!coordOf(p)" @click="focusPoint(p)">定位</button>
-                <button class="px-2 py-1 text-white bg-amber-600 rounded" @click="openEdit(p)">编辑坐标</button>
-              </td>
-            </tr>
-            <tr v-if="!shownPoints.length">
-              <td colspan="4" class="px-3 py-8 text-center text-gray-500">没有匹配的监测点</td>
-            </tr>
-            </tbody>
-          </table>
+            <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+              <div class="max-h-[520px] overflow-auto">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-gray-100 sticky top-0">
+                    <tr>
+                      <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                      <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
+                      <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                      <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="(p,idx) in shownPoints" :key="p.id" class="hover:bg-blue-50 transition-colors">
+                      <td class="px-3 py-3 whitespace-nowrap text-gray-900">{{ idx + 1 }}</td>
+                      <td class="px-3 py-3">
+                        <div class="font-medium text-gray-900">{{ p.name }}</div>
+                        <div class="text-sm text-gray-500">{{ p.type || '未分类' }}</div>
+                      </td>
+                      <td class="px-3 py-3">
+                        <span v-if="coordOf(p)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">已定位</span>
+                        <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">未定位</span>
+                      </td>
+                      <td class="px-3 py-3 whitespace-nowrap">
+                        <div class="flex gap-2">
+                          <button class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" 
+                                  :class="!coordOf(p) ? 'opacity-50 cursor-not-allowed' : ''"
+                                  :disabled="!coordOf(p)" @click="focusPoint(p)">定位</button>
+                          <button class="px-3 py-1.5 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors" 
+                                  @click="openEdit(p)">编辑坐标</button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr v-if="!shownPoints.length">
+                      <td colspan="4" class="px-3 py-8 text-center text-gray-500">没有匹配的监测点</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div class="text-xs text-blue-800">
+                <p><strong>使用说明：</strong></p>
+                <p>• 坐标格式：<code class="bg-blue-100 px-1 py-0.5 rounded">纬度,经度</code>，如 <code class="bg-blue-100 px-1 py-0.5 rounded">39.9042,116.4074</code></p>
+                <p>• 右键地图可直接在该处"新增监测点"</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="text-xs text-gray-500">
-          <p>坐标写入 <code>monitoring_point.location</code>，格式 <code>纬度,经度</code>，如 <code>39.9042,116.4074</code>。</p>
-          <p>右键地图可直接在该处“新增监测点”。</p>
+        <!-- 地图区域 -->
+        <div class="col-span-12 lg:col-span-8">
+          <div class="bg-white rounded-lg shadow-xl p-4">
+            <div class="flex items-center gap-2 mb-4">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"></path>
+              </svg>
+              <h2 class="text-lg font-semibold text-gray-900">地理位置分布</h2>
+            </div>
+            <div class="bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+              <div ref="mapEl" class="w-full h-[640px]"></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <!-- 地图 -->
-    <div class="col-span-12 lg:col-span-8">
-      <div class="bg-white rounded-lg shadow p-2">
-        <div ref="mapEl" class="w-full h-[640px] rounded"></div>
       </div>
     </div>
   </div>
 
-  <!-- 编辑坐标弹窗：修复被地图遮挡（高 z-index），且可开启“拾取模式”透传点击到地图 -->
+  <!-- 编辑坐标弹窗 -->
   <div
       v-if="editor.show"
-      :class="['fixed inset-0 bg-black/40 flex items-center justify-center', editor.pickOnMap ? 'pointer-events-none z-[10000]' : 'z-[10000]']"
+      :class="['fixed inset-0 bg-black/50 flex items-center justify-center', editor.pickOnMap ? 'pointer-events-none z-[10000]' : 'z-[10000]']"
   >
-    <div class="bg-white rounded-lg shadow-lg p-6 w-[520px] pointer-events-auto">
-      <h3 class="text-lg font-semibold mb-3">编辑坐标 - {{ editor.point?.name }}</h3>
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-[520px] pointer-events-auto">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900">编辑坐标 - {{ editor.point?.name }}</h3>
+      </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm mb-1">纬度 (lat) -90~90</label>
-          <input v-model.number="editor.lat" type="number" step="0.000001" class="w-full border rounded px-3 py-2"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">纬度 (lat) -90~90</label>
+          <input 
+            v-model.number="editor.lat" 
+            type="number" 
+            step="0.000001" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            placeholder="例: 39.9042"
+          />
         </div>
         <div>
-          <label class="block text-sm mb-1">经度 (lon) -180~180</label>
-          <input v-model.number="editor.lon" type="number" step="0.000001" class="w-full border rounded px-3 py-2"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">经度 (lon) -180~180</label>
+          <input 
+            v-model.number="editor.lon" 
+            type="number" 
+            step="0.000001" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            placeholder="例: 116.4074"
+          />
         </div>
       </div>
 
-      <div class="flex items-center mt-3 gap-2">
-        <label class="inline-flex items-center gap-2">
-          <input type="checkbox" v-model="editor.pickOnMap" />
-          <span class="text-sm">地图拾取模式（勾选后点击地图即可填充坐标）</span>
+      <div class="flex items-center mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <label class="inline-flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" v-model="editor.pickOnMap" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+          <span class="text-sm text-blue-800 font-medium">地图拾取模式（勾选后点击地图即可填充坐标）</span>
         </label>
       </div>
 
-      <div class="mt-4 flex justify-end gap-2">
-        <button class="px-3 py-2" @click="closeEdit">取消</button>
-        <button class="px-3 py-2 bg-blue-600 text-white rounded" @click="saveEdit">保存</button>
+      <div class="mt-6 flex justify-end gap-3">
+        <button 
+          class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          @click="closeEdit"
+        >
+          取消
+        </button>
+        <button 
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          @click="saveEdit"
+        >
+          保存坐标
+        </button>
       </div>
     </div>
   </div>
 
   <!-- 右键新增监测点弹窗 -->
-  <div v-if="adder.show" class="fixed inset-0 bg-black/40 flex items-center justify-center z-[10000]">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-[520px]">
-      <h3 class="text-lg font-semibold mb-3">在地图处新增监测点</h3>
-      <div class="grid grid-cols-2 gap-3">
+  <div v-if="adder.show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]">
+    <div class="bg-white rounded-lg shadow-2xl p-6 w-[520px]">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900">在地图处新增监测点</h3>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm mb-1">名称</label>
-          <input v-model="adder.name" class="w-full border rounded px-3 py-2" placeholder="请输入站点名"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">名称</label>
+          <input 
+            v-model="adder.name" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors" 
+            placeholder="请输入站点名"
+          />
         </div>
         <div>
-          <label class="block text-sm mb-1">类型</label>
-          <input v-model="adder.type" class="w-full border rounded px-3 py-2" placeholder="如 WATER_LEVEL/RAINFALL"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">类型</label>
+          <input 
+            v-model="adder.type" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors" 
+            placeholder="如 WATER_LEVEL/RAINFALL"
+          />
         </div>
         <div>
-          <label class="block text-sm mb-1">纬度</label>
-          <input v-model.number="adder.lat" type="number" step="0.000001" class="w-full border rounded px-3 py-2"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">纬度</label>
+          <input 
+            v-model.number="adder.lat" 
+            type="number" 
+            step="0.000001" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+            placeholder="例: 39.9042"
+          />
         </div>
         <div>
-          <label class="block text-sm mb-1">经度</label>
-          <input v-model.number="adder.lon" type="number" step="0.000001" class="w-full border rounded px-3 py-2"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">经度</label>
+          <input 
+            v-model.number="adder.lon" 
+            type="number" 
+            step="0.000001" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+            placeholder="例: 116.4074"
+          />
         </div>
         <div class="col-span-2">
-          <label class="block text-sm mb-1">流域（可选）</label>
-          <input v-model="adder.riverBasin" class="w-full border rounded px-3 py-2"/>
+          <label class="block text-sm font-medium text-gray-700 mb-2">流域（可选）</label>
+          <input 
+            v-model="adder.riverBasin" 
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
+            placeholder="请输入所属流域"
+          />
         </div>
       </div>
-      <div class="mt-4 flex justify-end gap-2">
-        <button class="px-3 py-2" @click="adder.show=false">取消</button>
-        <button class="px-3 py-2 bg-green-600 text-white rounded" @click="saveAdd">保存</button>
+      <div class="mt-6 flex justify-end gap-3">
+        <button 
+          class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          @click="adder.show=false"
+        >
+          取消
+        </button>
+        <button 
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          @click="saveAdd"
+        >
+          创建监测点
+        </button>
       </div>
-    </div>
-  </div>
     </div>
   </div>
 </template>
@@ -190,290 +286,217 @@ const editor = reactive({
   pickOnMap: false,
 })
 
-// 右键新增
+// 新增弹窗
 const adder = reactive({
   show: false,
   name: '',
-  type: 'WATER_LEVEL',
+  type: '',
   lat: null,
   lon: null,
-  riverBasin: ''
+  riverBasin: '',
 })
 
-// 预警级别：pointId -> 最近（未解除优先，其次最近一条）级别
-const warnLevelMap = ref(new Map())
-
-// 计算筛选后的列表
+// 计算属性：根据关键词过滤出的监测点
 const shownPoints = computed(() => {
-  const kw = (keyword.value || '').trim().toLowerCase()
-  if (!kw) return rawPoints.value
+  if (!keyword.value.trim()) return rawPoints.value
+  const kw = keyword.value.toLowerCase()
   return rawPoints.value.filter(p => {
-    return (p.name||'').toLowerCase().includes(kw)
-        || (p.type||'').toLowerCase().includes(kw)
-        || (p.riverBasin||'').toLowerCase().includes(kw)
+    const name = (p.name || '').toLowerCase()
+    const type = (p.type || '').toLowerCase()
+    const basin = (p.riverBasin || '').toLowerCase()
+    return name.includes(kw) || type.includes(kw) || basin.includes(kw)
   })
 })
 
-// 初始化
-onMounted(async () => {
-  await Promise.all([loadPoints(), loadWarnLevels()])
-  initMap()
-  drawMarkers()
-  window.addEventListener('resize', resize)
-
-  // 右键新增
-  map.on('contextmenu', (e) => {
-    // 打开“新增”弹窗
-    adder.lat = +e.latlng.lat.toFixed(6)
-    adder.lon = +e.latlng.lng.toFixed(6)
-    adder.name = ''
-    adder.type = 'WATER_LEVEL'
-    adder.riverBasin = ''
-    adder.show = true
-  })
-
-  // 地图点击用于“拾取模式”
-  map.on('click', (e) => {
-    if (!editor.show || !editor.pickOnMap) return
-    editor.lat = +e.latlng.lat.toFixed(6)
-    editor.lon = +e.latlng.lng.toFixed(6)
-  })
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', resize)
-  if (map) map.remove()
-})
-
-// 加载站点
-async function loadPoints() {
-  const { data } = await request.get('/api/points')
-  if (data.code === 0) {
-    // 按id从小到大排序
-    rawPoints.value = (data.data || []).sort((a, b) => a.id - b.id)
-  } else {
-    alert(data.msg || '加载监测点失败')
-  }
+// --- 方法 ---
+function coordOf(point) {
+  if (!point.location) return null
+  const [lat, lon] = point.location.split(',').map(s => parseFloat(s.trim()))
+  if (isNaN(lat) || isNaN(lon)) return null
+  return [lat, lon]
 }
 
-// 加载预警并映射 pointId -> level
-async function loadWarnLevels() {
-  const m = new Map()
-  // 取全部预警（包含已解除），按触发时间排序
-  const { data } = await request.get('/api/warnings', { params: { status: 'ALL' } })
-  if (data.code === 0) {
-    const list = data.data || []
-    // 优先活跃（未处理/已确认），否则取最近一条
-    const latestByPoint = new Map()
-    for (const w of list) {
-      const key = w.pointId
-      const cur = latestByPoint.get(key)
-      if (!cur || new Date(w.triggerTime) > new Date(cur.triggerTime)) {
-        latestByPoint.set(key, w)
-      }
+async function reload() {
+  try {
+    const { data: resp } = await request.get('/api/points')
+    if (resp.code === 0) {
+      rawPoints.value = resp.data || []
+      updateMap()
     }
-    for (const [pid, w] of latestByPoint.entries()) {
-      let lvl = w.level
-      if (w.status === '已解除') {
-        // 已解除：弱化为 0（正常）
-        lvl = 0
-      }
-      m.set(pid, lvl)
-    }
-  }
-  warnLevelMap.value = m
-}
-
-// 解析 location -> {lat, lon} or null
-function coordOf(p) {
-  if (!p?.location) return null
-  const m = String(p.location).trim().match(/-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?/)
-  if (!m) return null
-  const [a, b] = m[0].split(',').map(s => parseFloat(s.trim()))
-  const asLat = Math.abs(a) <= 90 && Math.abs(b) <= 180
-  const asLon = Math.abs(a) <= 180 && Math.abs(b) <= 90
-  if (asLat && Math.abs(b) <= 180) return { lat: a, lon: b }
-  if (asLon) return { lat: b, lon: a }
-  return null
-}
-
-// 地图
-function initMap() {
-  map = L.map(mapEl.value, {
-    center: [34.5, 104.0], // 中国大致中心
-    zoom: 4,
-    minZoom: 2
-  })
-  tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-  })
-  tileLayer.addTo(map)
-}
-function resize() {
-  if (map) map.invalidateSize()
-}
-
-// 构造彩色小圆点 divIcon（按预警级别着色）
-function makeDivIcon(level = 0) {
-  // 0: 正常; 1~4: 预警级别
-  const cls = `marker-dot ${levelClass(level)}`
-  return L.divIcon({
-    html: `<div class="${cls}"></div>`,
-    className: '', // 使用自定义 html，不要默认类
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
-  })
-}
-function levelClass(level) {
-  switch (Number(level)||0) {
-    case 1: return 'l1'
-    case 2: return 'l2'
-    case 3: return 'l3'
-    case 4: return 'l4'
-    default: return 'ok'
+  } catch (error) {
+    console.error('加载监测点失败:', error)
   }
 }
 
-// 绘制标注（支持聚合 + 过滤）
-function drawMarkers() {
-  // 移除旧聚合层
-  if (clusterGroup) {
-    map.removeLayer(clusterGroup)
-  }
-  clusterGroup = L.markerClusterGroup()
-  map.addLayer(clusterGroup)
-
-  markers.clear()
-  const toDraw = filterOnlyOnMap.value ? shownPoints.value : rawPoints.value
-
-  const bounds = []
-  for (const p of toDraw) {
-    const c = coordOf(p)
-    if (!c) continue
-    const lvl = warnLevelMap.value.get(p.id) ?? 0
-    const mk = L.marker([c.lat, c.lon], { icon: makeDivIcon(lvl), title: p.name })
-        .bindPopup(popupHtml(p, c, lvl))
-    clusterGroup.addLayer(mk)
-    markers.set(p.id, mk)
-    bounds.push([c.lat, c.lon])
-  }
-  if (bounds.length) {
-    map.fitBounds(bounds, { padding: [20, 20] })
-  }
-}
-
-function popupHtml(p, c, level) {
-  const lines = [
-    `<div><strong>${escapeHtml(p.name || '')}</strong></div>`,
-    `<div class="text-xs text-gray-600">类型：${escapeHtml(p.type || '-')}</div>`,
-    `<div class="text-xs text-gray-600">流域：${escapeHtml(p.riverBasin || '-')}</div>`,
-    `<div class="text-xs text-gray-600">坐标：${c.lat.toFixed(6)}, ${c.lon.toFixed(6)}</div>`,
-    `<div class="text-xs text-gray-600">预警级别：${level || 0}</div>`,
-    `<div class="mt-2"><a href="#/history" class="text-blue-600 underline text-sm">查看历史趋势</a></div>`
-  ]
-  return lines.join('')
-}
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))
-}
-
-// 列表筛选/控制
-function applyFilter() {
-  if (filterOnlyOnMap.value) drawMarkers()
-}
 function toggleFilterOnly() {
   filterOnlyOnMap.value = !filterOnlyOnMap.value
-  drawMarkers()
+  updateMap()
 }
-function focusPoint(p) {
-  const mk = markers.get(p.id)
-  const c = coordOf(p)
-  if (mk && c) {
-    map.setView([c.lat, c.lon], Math.max(map.getZoom(), 13))
-    mk.openPopup()
+
+function applyFilter() {
+  updateMap()
+}
+
+function updateMap() {
+  if (!clusterGroup) return
+
+  clusterGroup.clearLayers()
+  markers.clear()
+
+  const pointsToShow = filterOnlyOnMap.value ? shownPoints.value : rawPoints.value
+
+  pointsToShow.forEach(point => {
+    const coord = coordOf(point)
+    if (!coord) return
+
+    const [lat, lon] = coord
+    const marker = L.marker([lat, lon])
+      .bindPopup(`
+        <div style="min-width: 200px;">
+          <h4 style="margin: 0 0 8px 0; color: #1f2937;">${point.name}</h4>
+          <p style="margin: 2px 0; font-size: 12px; color: #6b7280;">类型: ${point.type || '未分类'}</p>
+          <p style="margin: 2px 0; font-size: 12px; color: #6b7280;">坐标: ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
+          ${point.riverBasin ? `<p style="margin: 2px 0; font-size: 12px; color: #6b7280;">流域: ${point.riverBasin}</p>` : ''}
+        </div>
+      `)
+
+    clusterGroup.addLayer(marker)
+    markers.set(point.id, marker)
+  })
+}
+
+function focusPoint(point) {
+  const coord = coordOf(point)
+  if (!coord) return
+  const [lat, lon] = coord
+  map.setView([lat, lon], 15)
+  
+  const marker = markers.get(point.id)
+  if (marker) {
+    marker.openPopup()
   }
 }
 
-// 编辑
-function openEdit(p) {
-  editor.point = { ...p } // 克隆
-  const c = coordOf(p)
-  editor.lat = c ? +c.lat : null
-  editor.lon = c ? +c.lon : null
-  editor.pickOnMap = false
+function openEdit(point) {
+  const coord = coordOf(point) || [null, null]
   editor.show = true
+  editor.point = point
+  editor.lat = coord[0]
+  editor.lon = coord[1]
+  editor.pickOnMap = false
 }
+
 function closeEdit() {
   editor.show = false
   editor.point = null
+  editor.lat = null
+  editor.lon = null
   editor.pickOnMap = false
 }
+
 async function saveEdit() {
-  if (!isFinite(editor.lat) || !isFinite(editor.lon)) { alert('请填写合法经纬度'); return }
-  if (Math.abs(editor.lat) > 90 || Math.abs(editor.lon) > 180) { alert('经纬度超出范围'); return }
-  const loc = `${Number(editor.lat).toFixed(6)},${Number(editor.lon).toFixed(6)}`
-  const idx = rawPoints.value.findIndex(x => x.id === editor.point.id)
-  if (idx === -1) { alert('对象不存在'); return }
-  const body = { ...rawPoints.value[idx], location: loc }
+  if (!editor.point || editor.lat == null || editor.lon == null) {
+    alert('请填写完整的坐标信息')
+    return
+  }
 
-  const { data } = await request.put(`/api/points/${editor.point.id}`, body)
-  if (data.code === 0) {
-    rawPoints.value[idx] = data.data || body
-    await loadWarnLevels() // 可能需要刷新级别
-    drawMarkers()
-    closeEdit()
-  } else {
-    alert(data.msg || '保存失败')
+  try {
+    const { data: resp } = await request.put(`/api/points/${editor.point.id}`, {
+      ...editor.point,
+      location: `${editor.lat},${editor.lon}`
+    })
+    
+    if (resp.code === 0) {
+      alert('坐标更新成功')
+      closeEdit()
+      reload()
+    } else {
+      alert(resp.msg || '更新失败')
+    }
+  } catch (error) {
+    console.error('更新坐标失败:', error)
+    alert('更新失败，请检查网络连接')
   }
 }
 
-// 新增（右键）
 async function saveAdd() {
-  if (!adder.name.trim()) { alert('请填写名称'); return }
-  if (!isFinite(adder.lat) || !isFinite(adder.lon)) { alert('经纬度不合法'); return }
-  if (Math.abs(adder.lat) > 90 || Math.abs(adder.lon) > 180) { alert('经纬度超出范围'); return }
-
-  const body = {
-    name: adder.name.trim(),
-    type: adder.type.trim() || null,
-    location: `${Number(adder.lat).toFixed(6)},${Number(adder.lon).toFixed(6)}`,
-    riverBasin: adder.riverBasin || null,
-    installHeight: null,
-    sensorModel: null
+  if (!adder.name || adder.lat == null || adder.lon == null) {
+    alert('请填写完整的监测点信息')
+    return
   }
-  const { data } = await request.post('/api/points', body)
-  if (data.code === 0) {
-    adder.show = false
-    await loadPoints()
-    await loadWarnLevels()
-    drawMarkers()
-  } else {
-    alert(data.msg || '新增失败')
+
+  try {
+    const { data: resp } = await request.post('/api/points', {
+      name: adder.name,
+      type: adder.type,
+      location: `${adder.lat},${adder.lon}`,
+      riverBasin: adder.riverBasin
+    })
+    
+    if (resp.code === 0) {
+      alert('监测点创建成功')
+      adder.show = false
+      adder.name = ''
+      adder.type = ''
+      adder.lat = null
+      adder.lon = null
+      adder.riverBasin = ''
+      reload()
+    } else {
+      alert(resp.msg || '创建失败')
+    }
+  } catch (error) {
+    console.error('创建监测点失败:', error)
+    alert('创建失败，请检查网络连接')
   }
 }
 
-function reload() {
-  Promise.all([loadPoints(), loadWarnLevels()]).then(drawMarkers)
-}
+// --- 生命周期 ---
+onMounted(async () => {
+  // 初始化地图
+  map = L.map(mapEl.value, {
+    center: [39.9042, 116.4074], // 北京
+    zoom: 10,
+    zoomControl: true,
+  })
+
+  // 添加瓦片图层
+  tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18,
+  })
+  tileLayer.addTo(map)
+
+  // 初始化聚合图层
+  clusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+  })
+  map.addLayer(clusterGroup)
+
+  // 地图右键菜单
+  map.on('contextmenu', (e) => {
+    adder.lat = e.latlng.lat
+    adder.lon = e.latlng.lng
+    adder.show = true
+  })
+
+  // 编辑模式下的地图点击
+  map.on('click', (e) => {
+    if (editor.show && editor.pickOnMap) {
+      editor.lat = e.latlng.lat
+      editor.lon = e.latlng.lng
+    }
+  })
+
+  await reload()
+})
+
+onBeforeUnmount(() => {
+  if (map) {
+    map.remove()
+  }
+})
 </script>
-
-<style>
-/* 地图字体跟随应用 */
-.leaflet-container { font-family: inherit; }
-
-/* 彩色小圆点标注（用于按级别着色） */
-.marker-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 9999px;
-  box-shadow: 0 0 0 2px #fff;
-}
-.marker-dot.ok { background: #10b981; }   /* 正常：绿 */
-.marker-dot.l1 { background: #facc15; }   /* L1：黄 */
-.marker-dot.l2 { background: #f97316; }   /* L2：橙 */
-.marker-dot.l3 { background: #ef4444; }   /* L3：红 */
-.marker-dot.l4 { background: #7e22ce; }   /* L4：紫 */
-
-/* 让弹窗始终压过 Leaflet 内部各层（修复“被地图挡住”） */
-.z-\[10000\] { z-index: 10000 !important; }
-</style>
