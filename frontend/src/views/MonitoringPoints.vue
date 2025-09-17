@@ -148,11 +148,15 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">类型</label>
-              <input 
+              <select 
                 v-model="form.type" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
-                placeholder="如：RAIN/GATE/WATER_LEVEL"
-              />
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-white"
+              >
+                <option value="">请选择监测点类型</option>
+                <option v-for="type in monitoringPointTypes" :key="type.value" :value="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-2">位置（经纬度或区域）</label>
@@ -224,13 +228,17 @@ const keyword = ref('')
 const blank = { id: null, name: '', type: '', location: '', riverBasin: '', installHeight: null, sensorModel: '' }
 const form = reactive({ ...blank })
 
+// 监测点类型定义 - 与业务系统保持一致
+const monitoringPointTypes = [
+  { value: 'WATER_LEVEL', label: '水位监测' },
+  { value: 'RAINFALL', label: '雨量监测' }
+]
+
 // 获取监测点类型样式
 const getTypeClass = (type) => {
   const typeMap = {
-    'RAIN': 'bg-blue-100 text-blue-800',
     'WATER_LEVEL': 'bg-green-100 text-green-800',
-    'GATE': 'bg-purple-100 text-purple-800',
-    'FLOW': 'bg-orange-100 text-orange-800'
+    'RAINFALL': 'bg-blue-100 text-blue-800'
   }
   return typeMap[type] || 'bg-gray-100 text-gray-800'
 }
@@ -238,10 +246,8 @@ const getTypeClass = (type) => {
 // 获取监测点类型标签
 const getTypeLabel = (type) => {
   const labelMap = {
-    'RAIN': '雨量',
-    'WATER_LEVEL': '水位',
-    'GATE': '闸门',
-    'FLOW': '流量'
+    'WATER_LEVEL': '水位监测',
+    'RAINFALL': '雨量监测'
   }
   return labelMap[type] || type
 }
