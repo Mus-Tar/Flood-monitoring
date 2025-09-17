@@ -10,6 +10,7 @@ import com.yourcompany.yourapp.util.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,12 @@ public class WarningEventController {
         if (status != null && !status.isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             qw.eq("status", status);
         }
+        
+        // 只显示触发时间在当前时间之前（或等于当前时间）的预警事件
+        // 过滤掉未来的预警事件
+        qw.le("trigger_time", LocalDateTime.now());
+        
+        // 按触发时间降序排列，最接近现在的时间（最新发生的）排在最上面
         qw.orderByDesc("trigger_time");
         List<WarningEvent> list = service.list(qw);
 
