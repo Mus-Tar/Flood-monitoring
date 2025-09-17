@@ -23,7 +23,7 @@
       <div>
         <label class="block text-sm mb-1">预测起点（含）</label>
         <input type="datetime-local" v-model="forecastStartLocal" class="w-full border rounded px-3 py-2"/>
-        <p class="text-xs text-gray-500 mt-1">起点之前为历史，之后即为“预测”（直接显示未来数据）。</p>
+        <p class="text-xs text-gray-500 mt-1">起点之前为历史，之后即为“预测”。</p>
       </div>
 
       <div>
@@ -91,8 +91,13 @@
 
     <!-- 预测明细（= 未来段明细） -->
     <div class="border rounded">
-      <div class="px-3 py-2 bg-gray-50 font-medium">预测明细</div>
-      <div class="overflow-auto">
+      <div class="px-3 py-2 bg-gray-50 font-medium flex items-center justify-between cursor-pointer" @click="detailExpanded = !detailExpanded">
+        <span>预测明细</span>
+        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': detailExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+      <div class="overflow-auto" v-show="detailExpanded">
         <table class="min-w-full text-sm">
           <thead class="bg-gray-100">
           <tr>
@@ -164,6 +169,9 @@ const metrics = reactive({
 })
 const tableRows = ref([])
 const summaryText = ref('')
+
+// 预测明细折叠状态
+const detailExpanded = ref(false)
 
 /** ====== 生命周期 ====== */
 onMounted(async () => {
@@ -317,7 +325,7 @@ function buildSummary() {
   const flMax = metrics.flow.max
 
   const p = []
-  p.push(`基于监测点「${pointName(pointId.value)}」的数据，已生成预测（直接使用“预测起点”之后的未来数据）。窗口：${fmtTick(fromLocalInput(forecastStartLocal.value))} 起后 ${horizonHours.value} 小时。`)
+  p.push(`基于监测点「${pointName(pointId.value)}」的数据，已生成预测。窗口：${fmtTick(fromLocalInput(forecastStartLocal.value))} 起后 ${horizonHours.value} 小时。`)
   if (wlMax != null) p.push(`未来水位峰值约 ${wlMax} m。`)
   if (rfSum != null) p.push(`未来累计雨量约 ${rfSum} mm。`)
   if (flMax != null) p.push(`未来流量峰值约 ${flMax} m³/s。`)
