@@ -140,76 +140,34 @@ const onSubmit = async () => {
   isLoading.value = true
   
   try {
-    // 模拟登录延迟
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 调用后端登录API
+    const { data } = await request.post('/api/auth/login', form)
     
-    // 首先检查注册用户
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-    const registeredUser = registeredUsers.find(user => 
-      user.username === form.username && user.password === form.password
-    )
-    
-    if (registeredUser) {
-      // 注册用户登录成功
-      const mockToken = `token_${Date.now()}_${Math.random()}`
-      localStorage.setItem('token', mockToken)
-      localStorage.setItem('username', registeredUser.username)
-      localStorage.setItem('userRole', registeredUser.role)
+    if (data.code === 0) {
+      // 登录成功，保存token和用户信息
+      localStorage.setItem('token', data.data.token)
+      localStorage.setItem('username', data.data.username)
+      localStorage.setItem('userRole', data.data.role || 'USER')
       
+      // 记住用户名
       if (rememberMe.value) {
         localStorage.setItem('rememberedUsername', form.username)
+      } else {
+        localStorage.removeItem('rememberedUsername')
       }
       
+      // 跳转到用户管理页面
       router.push('/users')
-      return
+    } else {
+      alert(data.msg || '登录失败')
     }
-    
-    // 尝试后端登录（如果后端可用）
-    try {
-      const { data } = await request.post('/api/auth/login', form)
-      if (data.code === 0) {
-        localStorage.setItem('token', data.data.token)
-        localStorage.setItem('username', data.data.username)
-        localStorage.setItem('userRole', data.data.role || 'USER')
-        
-        if (rememberMe.value) {
-          localStorage.setItem('rememberedUsername', form.username)
-        }
-        
-        router.push('/users')
-      } else {
-        throw new Error(data.msg || '登录失败')
-      }
-    } catch (apiError) {
-      // 后端不可用，使用演示账号验证
-      const demoAccounts = [
-        { username: 'admin', password: 'admin123', role: 'ADMIN' },
-        { username: 'user', password: 'user123', role: 'USER' }
-      ]
-      
-      const demoUser = demoAccounts.find(acc => 
-        acc.username === form.username && acc.password === form.password
-      )
-      
-      if (demoUser) {
-        const mockToken = `demo_token_${Date.now()}`
-        localStorage.setItem('token', mockToken)
-        localStorage.setItem('username', demoUser.username)
-        localStorage.setItem('userRole', demoUser.role)
-        
-        if (rememberMe.value) {
-          localStorage.setItem('rememberedUsername', form.username)
-        }
-        
-        router.push('/users')
-      } else {
-        alert('用户名或密码错误')
-      }
-    }
-    
   } catch (error) {
     console.error('登录失败:', error)
-    alert('登录失败，请检查用户名和密码')
+    if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+      alert('无法连接到服务器，请检查后端服务是否启动')
+    } else {
+      alert('用户名或密码错误')
+    }
   } finally {
     isLoading.value = false
   }

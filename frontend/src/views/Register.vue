@@ -130,10 +130,10 @@
                 <input
                   v-model="form.role"
                   type="radio"
-                  value="user"
+                  value="USER"
                   class="sr-only"
                 />
-                <div class="p-4 border-2 rounded-lg cursor-pointer transition-all" :class="form.role === 'user' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'">
+                <div class="p-4 border-2 rounded-lg cursor-pointer transition-all" :class="form.role === 'USER' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'">
                   <div class="flex items-center">
                     <svg class="h-8 w-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -149,10 +149,10 @@
                 <input
                   v-model="form.role"
                   type="radio"
-                  value="admin"
+                  value="ADMIN"
                   class="sr-only"
                 />
-                <div class="p-4 border-2 rounded-lg cursor-pointer transition-all" :class="form.role === 'admin' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'">
+                <div class="p-4 border-2 rounded-lg cursor-pointer transition-all" :class="form.role === 'ADMIN' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'">
                   <div class="flex items-center">
                     <svg class="h-8 w-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
@@ -199,6 +199,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import request from '../utils/request'
 
 const router = useRouter()
 
@@ -207,7 +208,7 @@ const form = ref({
   username: '',
   password: '',
   confirmPassword: '',
-  role: 'user'
+  role: 'USER'
 })
 
 // 状态
@@ -267,19 +268,29 @@ const checkUsername = async () => {
 
   checkingUsername.value = true
   
-  // 模拟API检查
-  setTimeout(() => {
-    // 检查已存在的用户名（从localStorage获取）
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}')
-    if (registeredUsers[username]) {
-      usernameError.value = '用户名已存在'
-      usernameChecked.value = false
+  try {
+    // 调用后端API检查用户名
+    const { data } = await request.get('/api/users')
+    if (data.code === 0) {
+      const existingUser = data.data.find(user => user.username === username)
+      if (existingUser) {
+        usernameError.value = '用户名已存在'
+        usernameChecked.value = false
+      } else {
+        usernameError.value = ''
+        usernameChecked.value = true
+      }
     } else {
-      usernameError.value = ''
-      usernameChecked.value = true
+      usernameError.value = '检查失败，请稍后重试'
+      usernameChecked.value = false
     }
+  } catch (error) {
+    console.error('检查用户名失败:', error)
+    usernameError.value = '无法连接服务器，请检查网络'
+    usernameChecked.value = false
+  } finally {
     checkingUsername.value = false
-  }, 500)
+  }
 }
 
 // 注册处理
@@ -289,25 +300,46 @@ const handleRegister = async () => {
   isLoading.value = true
   
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 保存用户到localStorage
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}')
-    registeredUsers[form.value.username] = {
+    // 调用后端注册API
+    const { data } = await request.post('/api/auth/register', {
+      username: form.value.username,
       password: form.value.password,
-      role: form.value.role,
-      createdAt: new Date().toISOString()
-    }
-    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers))
-    
-    // 注册成功，跳转到登录页
-    router.push({ 
-      path: '/login',
-      query: { message: '注册成功，请登录', username: form.value.username }
+      role: form.value.role
     })
+    
+    if (data.code === 0) {
+      // 注册成功，跳转到登录页
+      alert('注册成功！请使用新账号登录')
+      router.push({ 
+        path: '/login',
+        query: { username: form.value.username }
+      })
+    } else {
+      alert(data.msg || '注册失败，请重试')
+    }
   } catch (error) {
-    console.error('注册失败:', error)
+    console.error('注册详细错误信息:', error)
+    console.log('发送的注册参数:', {
+      username: form.value.username,
+      password: form.value.password,
+      role: form.value.role
+    })
+    
+    let errorMessage = '注册失败'
+    
+    if (error.response && error.response.data) {
+      // 后端返回的具体错误信息
+      errorMessage = error.response.data.msg || error.response.data.message || '服务器返回错误'
+      console.log('后端返回错误:', error.response.data)
+    } else if (error.code === 'ECONNREFUSED') {
+      errorMessage = '无法连接到服务器，请确认后端服务已启动 (端口8080)'
+    } else if (error.message && error.message.includes('Network Error')) {
+      errorMessage = '网络连接错误，请检查网络设置或后端服务状态'
+    } else if (error.message) {
+      errorMessage = '请求失败: ' + error.message
+    }
+    
+    alert(errorMessage)
   } finally {
     isLoading.value = false
   }
