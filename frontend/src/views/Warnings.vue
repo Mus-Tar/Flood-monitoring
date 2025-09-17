@@ -178,7 +178,7 @@
                     <button 
                       v-if="w.status === '未处理'"
                       class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors" 
-                      @click="confirm(w)"
+                      @click="confirmWarning(w)"
                     >
                       <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -337,7 +337,7 @@ const load = async () => {
   }
 }
 
-const confirm = async (w) => {
+const confirmWarning = async (w) => {
   try {
     const user = localStorage.getItem('username') || 'admin'
     const { data } = await request.put(`/api/warnings/${w.id}/confirm`, null, { params: { user } })
@@ -368,8 +368,6 @@ const resolve = async (w) => {
 }
 
 const remove = async (w) => {
-  if (!confirm(`确认删除预警事件 #${w.id}？删除后不可恢复。`)) return
-  
   try {
     const { data } = await request.delete(`/api/warnings/${w.id}`)
     if (data.code === 0) {
