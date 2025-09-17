@@ -41,8 +41,8 @@
 
         <!-- 导航菜单 -->
         <nav class="flex items-center gap-2">
-          <!-- 基础数据管理 -->
-          <div class="flex items-center gap-1">
+          <!-- 基础数据管理 (仅管理员可见) -->
+          <div class="flex items-center gap-1" v-if="isAdmin()">
             <router-link to="/points" 
               class="flex items-center gap-2 px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm"
               :class="$route.path === '/points' ? 'bg-white/20 text-white shadow-lg' : ''">
@@ -63,10 +63,10 @@
             </router-link>
           </div>
 
-          <div class="w-px h-6 bg-blue-400/30 mx-2"></div>
+          <div class="w-px h-6 bg-blue-400/30 mx-2" v-if="isAdmin()"></div>
 
-          <!-- 配置管理 -->
-          <div class="flex items-center gap-1">
+          <!-- 配置管理 (仅管理员可见) -->
+          <div class="flex items-center gap-1" v-if="isAdmin()">
             <router-link to="/thresholds" 
               class="flex items-center gap-2 px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200 backdrop-blur-sm"
               :class="$route.path === '/thresholds' ? 'bg-white/20 text-white shadow-lg' : ''">
@@ -86,7 +86,7 @@
             </router-link>
           </div>
 
-          <div class="w-px h-6 bg-blue-400/30 mx-2"></div>
+          <div class="w-px h-6 bg-blue-400/30 mx-2" v-if="isAdmin()"></div>
 
           <!-- 监控预警 -->
           <div class="flex items-center gap-1">
@@ -150,22 +150,30 @@ const router = useRouter()
 const route = useRoute()
 const isLoggedIn = ref(false)
 const username = ref('')
+const userRole = ref('')
+
+// 权限判断
+const isAdmin = () => userRole.value === 'ADMIN'
 
 // 检查登录状态
 const checkLoginStatus = () => {
   const token = localStorage.getItem('token')
   const storedUsername = localStorage.getItem('username')
+  const storedUserRole = localStorage.getItem('userRole')
   
   isLoggedIn.value = !!token
   username.value = storedUsername || ''
+  userRole.value = storedUserRole || 'USER'
 }
 
 // 登出功能
 const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('username')
+  localStorage.removeItem('userRole')
   isLoggedIn.value = false
   username.value = ''
+  userRole.value = ''
   router.push('/login')
 }
 

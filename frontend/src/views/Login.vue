@@ -156,8 +156,9 @@ const onSubmit = async () => {
         localStorage.removeItem('rememberedUsername')
       }
       
-      // 跳转到用户管理页面
-      router.push('/users')
+      // 跳转到适当页面：管理员到用户管理，普通用户到预警列表
+      const userRole = data.data.role || 'USER'
+      router.push(userRole === 'ADMIN' ? '/users' : '/warnings')
     } else {
       alert(data.msg || '登录失败')
     }
