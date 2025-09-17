@@ -329,8 +329,8 @@ const load = async () => {
         pointId: query.pointId || undefined
       }})
     if (data.code === 0) {
-      // 按id从小到大排序
-      list.value = (data.data || []).sort((a, b) => a.id - b.id)
+      // 保持后端返回的时间降序排序，不做额外排序
+      list.value = data.data || []
     }
   } catch (error) {
     console.error('加载数据失败:', error)

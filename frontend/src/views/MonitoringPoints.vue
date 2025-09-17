@@ -179,7 +179,7 @@
               <input 
                 v-model.number="form.installHeight" 
                 type="number" 
-                step="0.01" 
+                step="0.5" 
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors" 
                 placeholder="0.00"
               />
