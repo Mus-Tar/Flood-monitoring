@@ -16,5 +16,4 @@ public class WarningEventVO {
     private LocalDateTime triggerTime;
     private String status;
     private String handledBy;
-    private Long planId;
 }

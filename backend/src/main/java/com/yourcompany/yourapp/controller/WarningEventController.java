@@ -45,7 +45,6 @@ public class WarningEventController {
             vo.setTriggerTime(e.getTriggerTime());
             vo.setStatus(e.getStatus());
             vo.setHandledBy(e.getHandledBy());
-            vo.setPlanId(e.getPlanId());
             return vo;
         }).collect(Collectors.toList());
 

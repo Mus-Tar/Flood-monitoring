@@ -22,5 +22,4 @@ public class WarningEvent {
 
     private String status;     // 未处理 / 已确认 / 已解除
     private String handledBy;
-    private Long planId;       // 预案，可空
 }
