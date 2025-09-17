@@ -262,7 +262,10 @@ const formatDate = (dateStr) => {
 const load = async () => {
   try {
     const { data } = await request.get('/api/points', { params: { keyword: keyword.value || undefined }})
-    if(data.code === 0) list.value = data.data || []
+    if(data.code === 0) {
+      // 按id从小到大排序
+      list.value = (data.data || []).sort((a, b) => a.id - b.id)
+    }
   } catch (error) {
     console.error('加载监测点失败:', error)
     // 可以添加错误提示

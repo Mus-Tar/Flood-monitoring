@@ -248,7 +248,8 @@ onBeforeUnmount(() => {
 async function loadPoints() {
   const { data } = await request.get('/api/points')
   if (data.code === 0) {
-    rawPoints.value = data.data || []
+    // 按id从小到大排序
+    rawPoints.value = (data.data || []).sort((a, b) => a.id - b.id)
   } else {
     alert(data.msg || '加载监测点失败')
   }

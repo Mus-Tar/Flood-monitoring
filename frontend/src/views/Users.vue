@@ -266,7 +266,10 @@ const isLastAdmin = (user) => {
 const load = async () => {
   try {
     const { data } = await request.get('/api/users')
-    if(data.code === 0) list.value = data.data || []
+    if(data.code === 0) {
+      // 按id从小到大排序
+      list.value = (data.data || []).sort((a, b) => a.id - b.id)
+    }
   } catch (error) {
     console.error('加载用户失败:', error)
   }

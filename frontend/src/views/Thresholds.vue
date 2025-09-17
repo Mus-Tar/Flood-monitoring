@@ -335,14 +335,20 @@ const load = async () => {
   try {
     // 加载监测点数据
     const { data: pd } = await request.get('/api/points')
-    if (pd.code === 0) points.value = pd.data || []
+    if (pd.code === 0) {
+      // 按id从小到大排序
+      points.value = (pd.data || []).sort((a, b) => a.id - b.id)
+    }
     
     // 加载阈值配置数据
     const { data } = await request.get('/api/thresholds', { params: {
         pointId: query.pointId || undefined,
         paramType: query.paramType || undefined
       }})
-    if (data.code === 0) list.value = data.data || []
+    if (data.code === 0) {
+      // 按id从小到大排序
+      list.value = (data.data || []).sort((a, b) => a.id - b.id)
+    }
   } catch (error) {
     console.error('加载数据失败:', error)
   }

@@ -322,7 +322,10 @@ onBeforeUnmount(() => {
 /** --- 方法区 --- */
 async function loadPoints() {
   const { data: resp } = await request.get('/api/points')
-  if (resp.code === 0) points.value = resp.data || []
+  if (resp.code === 0) {
+    // 按id从小到大排序
+    points.value = (resp.data || []).sort((a, b) => a.id - b.id)
+  }
 }
 
 function setQuickRange(hours) {

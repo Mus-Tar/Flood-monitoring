@@ -368,9 +368,13 @@ function fmtNum(v) {
 async function loadPoints() {
   try {
     const { data } = await request.get('/api/points')
-    if (data && Array.isArray(data.data)) points.value = data.data
-    else if (Array.isArray(data)) points.value = data
-    else throw new Error('bad format')
+    if (data && Array.isArray(data.data)) {
+      // 按id从小到大排序
+      points.value = data.data.sort((a, b) => a.id - b.id)
+    } else if (Array.isArray(data)) {
+      // 按id从小到大排序  
+      points.value = data.sort((a, b) => a.id - b.id)
+    } else throw new Error('bad format')
   } catch {
     points.value = []
   }
