@@ -24,7 +24,7 @@
               <input 
                 v-model="keyword" 
                 placeholder="搜索名称/类型/位置/流域/型号" 
-                class="w-80 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors pl-12"
+                class="w-96 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors pl-12"
                 @keyup.enter="load"
               />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -55,8 +55,8 @@
         </div>
 
         <!-- 监测点表格 -->
-        <div class="overflow-hidden rounded-lg border border-gray-200">
-          <table class="min-w-full divide-y divide-gray-200">
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="min-w-[1200px] w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
@@ -72,24 +72,24 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="p in list" :key="p.id" class="hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ p.id }}</td>
-                <td class="px-4 py-4 whitespace-nowrap">
+                <td class="px-4 py-5 whitespace-nowrap text-sm text-gray-900">{{ p.id }}</td>
+                <td class="px-4 py-5 whitespace-nowrap">
                   <div class="text-sm font-medium text-gray-900">{{ p.name }}</div>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
+                <td class="px-4 py-5 whitespace-nowrap">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
                         :class="getTypeClass(p.type)">
                     {{ getTypeLabel(p.type) }}
                   </span>
                 </td>
-                <td class="px-4 py-4 text-sm text-gray-900">{{ p.location }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ p.riverBasin }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ p.installHeight }}</td>
-                <td class="px-4 py-4 text-sm text-gray-900">{{ p.sensorModel }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td class="px-4 py-5 text-sm text-gray-900">{{ p.location }}</td>
+                <td class="px-4 py-5 whitespace-nowrap text-sm text-gray-900">{{ p.riverBasin }}</td>
+                <td class="px-4 py-5 whitespace-nowrap text-sm text-gray-900">{{ p.installHeight }}</td>
+                <td class="px-4 py-5 text-sm text-gray-900">{{ p.sensorModel }}</td>
+                <td class="px-4 py-5 whitespace-nowrap text-sm text-gray-500">
                   {{ p.createdAt ? formatDate(p.createdAt) : '-' }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                <td class="px-4 py-5 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center gap-2">
                     <button 
                       class="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 hover:bg-blue-200 rounded-md transition-colors" 

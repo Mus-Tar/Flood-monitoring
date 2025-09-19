@@ -22,7 +22,16 @@
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-lg font-semibold text-gray-900">监测点地图</h2>
               <div class="flex gap-2">
-                <button class="px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors" @click="reload">刷新</button>
+                <button class="px-3 py-2 text-sm bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        :disabled="isLoading"
+                        @click="reload(true)">
+                  <span class="inline-flex items-center gap-2">
+                    <svg v-if="isLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    刷新
+                  </span>
+                </button>
                 <button class="px-3 py-2 text-sm border rounded-lg transition-colors"
                         :class="filterOnlyOnMap ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'"
                         @click="toggleFilterOnly">
@@ -34,11 +43,18 @@
             <div class="flex items-center gap-2 mb-4">
               <input
                   v-model="keyword"
+                  @input="debouncedSearch"
                   @keyup.enter="applyFilter"
                   placeholder="按名称/类型/流域筛选"
                   class="border border-gray-300 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               />
-              <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors" @click="applyFilter">搜索</button>
+              <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2" 
+                      :disabled="isLoading" @click="applyFilter">
+                <svg v-if="isLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>{{ isLoading ? '搜索中...' : '搜索' }}</span>
+              </button>
             </div>
 
             <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
@@ -53,8 +69,8 @@
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="(p,idx) in shownPoints" :key="p.id" class="hover:bg-blue-50 transition-colors">
-                      <td class="px-3 py-3 whitespace-nowrap text-gray-900">{{ idx + 1 }}</td>
+                    <tr v-for="(p,idx) in paginatedPoints" :key="p.id" class="hover:bg-blue-50 transition-colors">
+                      <td class="px-3 py-3 whitespace-nowrap text-gray-900">{{ (currentPage - 1) * pageSize + idx + 1 }}</td>
                       <td class="px-3 py-3">
                         <div class="font-medium text-gray-900">{{ p.name }}</div>
                         <div class="text-sm text-gray-500">{{ p.type || '未分类' }}</div>
@@ -73,11 +89,46 @@
                         </div>
                       </td>
                     </tr>
-                    <tr v-if="!shownPoints.length">
+                    <tr v-if="!paginatedPoints.length && !isLoading">
                       <td colspan="4" class="px-3 py-8 text-center text-gray-500">没有匹配的监测点</td>
+                    </tr>
+                    <tr v-if="isLoading">
+                      <td colspan="4" class="px-3 py-8 text-center text-gray-500">
+                        <div class="flex items-center justify-center gap-2">
+                          <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                          </svg>
+                          加载中...
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            <!-- 分页控件 -->
+            <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+              <div class="text-sm text-gray-700">
+                显示第 {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, shownPoints.length) }} 条，
+                共 {{ shownPoints.length }} 条记录
+              </div>
+              <div class="flex items-center gap-2">
+                <button 
+                  :disabled="currentPage <= 1"
+                  @click="currentPage--"
+                  class="px-3 py-1 text-sm border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  上一页
+                </button>
+                <span class="text-sm text-gray-600">{{ currentPage }} / {{ totalPages }}</span>
+                <button 
+                  :disabled="currentPage >= totalPages"
+                  @click="currentPage++"
+                  class="px-3 py-1 text-sm border rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  下一页
+                </button>
               </div>
             </div>
 
@@ -100,8 +151,16 @@
               </svg>
               <h2 class="text-lg font-semibold text-gray-900">地理位置分布</h2>
             </div>
-            <div class="bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+            <div class="relative bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
               <div ref="mapEl" class="w-full h-[640px]"></div>
+              <div v-if="isLoading" class="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
+                <div class="flex items-center gap-2 text-gray-700">
+                  <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  正在刷新…
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -247,13 +306,26 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
 import request from '../utils/request'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+
+// 防抖函数
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
 
 // 解决默认图标无法显示的问题（Vite 环境）
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -266,16 +338,25 @@ L.Icon.Default.mergeOptions({
 })
 
 // --- 状态 ---
-const rawPoints = ref([])      // 全部监测点
+const rawPoints = ref([])      // 全部监测点（始终按ID升序）
 const keyword = ref('')
+const filteredKeyword = ref('') // 用于防抖的实际筛选关键词
 const mapEl = ref(null)
 let map = null
 let tileLayer = null
 let clusterGroup = null        // Marker 聚合图层
 const markers = new Map()      // id -> L.Marker
+const isLoading = ref(false)   // 加载状态
 
 // 过滤
 const filterOnlyOnMap = ref(false)
+
+// 预警级别：pointId -> level（0 正常；1~4 预警）
+const warnLevelMap = ref(new Map())
+
+// 缓存数据
+const lastUpdateTime = ref(0)
+const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
 
 // 编辑弹窗
 const editor = reactive({
@@ -296,17 +377,31 @@ const adder = reactive({
   riverBasin: '',
 })
 
-// 计算属性：根据关键词过滤出的监测点
+// 计算属性：根据关键词过滤出的监测点（使用缓存的防抖关键词）
 const shownPoints = computed(() => {
-  if (!keyword.value.trim()) return rawPoints.value
-  const kw = keyword.value.toLowerCase()
-  return rawPoints.value.filter(p => {
-    const name = (p.name || '').toLowerCase()
-    const type = (p.type || '').toLowerCase()
-    const basin = (p.riverBasin || '').toLowerCase()
-    return name.includes(kw) || type.includes(kw) || basin.includes(kw)
-  })
+  let arr
+  if (!filteredKeyword.value.trim()) arr = rawPoints.value
+  else {
+    const kw = filteredKeyword.value.toLowerCase()
+    arr = rawPoints.value.filter(p => {
+      const name = (p.name || '').toLowerCase()
+      const type = (p.type || '').toLowerCase()
+      const basin = (p.riverBasin || '').toLowerCase()
+      return name.includes(kw) || type.includes(kw) || basin.includes(kw)
+    })
+  }
+  return (arr || []).slice().sort((a,b) => a.id - b.id)
 })
+
+// 分页显示的监测点（避免一次渲染太多DOM）
+const currentPage = ref(1)
+const pageSize = 20
+const paginatedPoints = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  const end = start + pageSize
+  return shownPoints.value.slice(start, end)
+})
+const totalPages = computed(() => Math.ceil(shownPoints.value.length / pageSize))
 
 // --- 方法 ---
 function coordOf(point) {
@@ -316,54 +411,189 @@ function coordOf(point) {
   return [lat, lon]
 }
 
-async function reload() {
+// 加载预警并映射 pointId -> level
+async function loadWarnLevels() {
   try {
-    const { data: resp } = await request.get('/api/points')
+    const m = new Map()
+    const { data } = await request.get('/api/warnings', { params: { status: 'ALL' } })
+    if (data?.code === 0) {
+      const list = data.data || []
+      // 取每个 pointId 最近一条（以 triggerTime 最大为准），若已解除视为 0
+      const latestByPoint = new Map()
+      for (const w of list) {
+        const key = w.pointId
+        const cur = latestByPoint.get(key)
+        if (!cur || new Date(w.triggerTime) > new Date(cur.triggerTime)) {
+          latestByPoint.set(key, w)
+        }
+      }
+      for (const [pid, w] of latestByPoint.entries()) {
+        let lvl = Number(w.level) || 0
+        if (w.status === '已解除') lvl = 0
+        m.set(pid, lvl)
+      }
+    }
+    warnLevelMap.value = m
+  } catch (err) {
+    console.warn('加载预警失败，降级为全部正常：', err)
+    warnLevelMap.value = new Map()
+  }
+}
+
+// 构造彩色小圆点 divIcon（按预警级别着色）
+function makeDivIcon(level = 0) {
+  const cls = `marker-dot ${levelClass(level)}`
+  return L.divIcon({
+    html: `<div class="${cls}"></div>`,
+    className: '',
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
+  })
+}
+function levelClass(level) {
+  switch (Number(level) || 0) {
+    case 1: return 'l1'
+    case 2: return 'l2'
+    case 3: return 'l3'
+    case 4: return 'l4'
+    default: return 'ok'
+  }
+}
+
+async function reload(force = false) {
+  if (isLoading.value) return // 防止重复加载
+  
+  const now = Date.now()
+  if (!force && now - lastUpdateTime.value < CACHE_DURATION) {
+    console.log('使用缓存数据，跳过重新加载')
+    return
+  }
+  
+  isLoading.value = true
+  try {
+    // 记住当前视角，刷新后尽量保持
+    const currentCenter = map?.getCenter()
+    const currentZoom = map?.getZoom()
+    
+    // 并发加载监测点与预警级别
+    const [pointsResp] = await Promise.all([
+      request.get('/api/points'),
+      loadWarnLevels()
+    ])
+    const resp = pointsResp.data
     if (resp.code === 0) {
-      rawPoints.value = resp.data || []
-      updateMap()
+      rawPoints.value = (resp.data || []).slice().sort((a,b) => a.id - b.id)
+      lastUpdateTime.value = now
+      
+      // 刷新期间采用增量更新，尽量保持视角；首次加载才自适应
+      const firstLoad = !lastUpdateTime.value || lastUpdateTime.value === now
+      if (force && clusterGroup && !firstLoad) {
+        // 不清空，避免闪烁；只做增量更新
+      }
+      await updateMapDebounced(firstLoad)
+      
+      // 尝试恢复视角（非首次加载）
+      if (!firstLoad && currentCenter && typeof currentZoom === 'number') {
+        map.setView(currentCenter, currentZoom, { animate: true })
+      }
     }
   } catch (error) {
     console.error('加载监测点失败:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
 function toggleFilterOnly() {
   filterOnlyOnMap.value = !filterOnlyOnMap.value
-  updateMap()
+  updateMapDebounced(true)
 }
+
+// 防抖搜索
+const debouncedSearch = debounce(() => {
+  filteredKeyword.value = keyword.value
+  currentPage.value = 1 // 重置到第一页
+}, 300)
 
 function applyFilter() {
-  updateMap()
+  debouncedSearch()
 }
 
-function updateMap() {
+// 增量更新地图标记
+function updateMapIncremental() {
   if (!clusterGroup) return
 
-  clusterGroup.clearLayers()
-  markers.clear()
+  const pointsToShow = (filterOnlyOnMap.value ? shownPoints.value : rawPoints.value).slice().sort((a,b) => a.id - b.id)
+  const existingIds = new Set(markers.keys())
+  // 仅保留有坐标的id
+  const newIds = new Set(pointsToShow.filter(p => coordOf(p)).map(p => p.id))
 
-  const pointsToShow = filterOnlyOnMap.value ? shownPoints.value : rawPoints.value
+  // 移除不再需要的标记
+  for (const id of existingIds) {
+    if (!newIds.has(id)) {
+      const marker = markers.get(id)
+      if (marker) {
+        clusterGroup.removeLayer(marker)
+        markers.delete(id)
+      }
+    }
+  }
 
+  // 添加新的标记或更新现有标记
+  const bounds = []
   pointsToShow.forEach(point => {
     const coord = coordOf(point)
     if (!coord) return
 
     const [lat, lon] = coord
-    const marker = L.marker([lat, lon])
-      .bindPopup(`
-        <div style="min-width: 200px;">
-          <h4 style="margin: 0 0 8px 0; color: #1f2937;">${point.name}</h4>
-          <p style="margin: 2px 0; font-size: 12px; color: #6b7280;">类型: ${point.type || '未分类'}</p>
-          <p style="margin: 2px 0; font-size: 12px; color: #6b7280;">坐标: ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
-          ${point.riverBasin ? `<p style="margin: 2px 0; font-size: 12px; color: #6b7280;">流域: ${point.riverBasin}</p>` : ''}
-        </div>
-      `)
+    const lvl = warnLevelMap.value.get(point.id) ?? 0
+    const existingMarker = markers.get(point.id)
 
-    clusterGroup.addLayer(marker)
-    markers.set(point.id, marker)
+    if (existingMarker) {
+      // 更新现有标记的图标
+      existingMarker.setIcon(makeDivIcon(lvl))
+      existingMarker.setPopupContent(getPopupContent(point, lat, lon))
+    } else {
+      // 创建新标记
+      const marker = L.marker([lat, lon], { icon: makeDivIcon(lvl), title: point.name })
+        .bindPopup(getPopupContent(point, lat, lon))
+
+      clusterGroup.addLayer(marker)
+      markers.set(point.id, marker)
+    }
+    bounds.push([lat, lon])
   })
+
+  return bounds
 }
+
+// 提取popup内容为独立函数，提高复用性
+function getPopupContent(point, lat, lon) {
+  return `
+    <div style="min-width: 200px;">
+      <h4 style="margin: 0 0 8px 0; color: #1f2937;">${point.name}</h4>
+      <p style="margin: 2px 0; font-size: 12px; color: #6b7280;">类型: ${point.type || '未分类'}</p>
+      <p style="margin: 2px 0; font-size: 12px; color: #6b7280;">坐标: ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
+      ${point.riverBasin ? `<p style="margin: 2px 0; font-size: 12px; color: #6b7280;">流域: ${point.riverBasin}</p>` : ''}
+      <div style="margin-top:8px;">
+        <a href="#/history?pointId=${point.id}" style="color:#2563eb;text-decoration:underline;font-size:12px;">查看历史趋势</a>
+      </div>
+    </div>
+  `
+}
+
+// 地图更新函数
+function updateMap(fit = false) {
+  const bounds = updateMapIncremental()
+  
+  // 视野自适应：首次加载与主动请求时启用；也可在筛选切换时调用
+  if (fit && bounds && bounds.length) {
+    map.fitBounds(bounds, { padding: [20, 20] })
+  }
+}
+
+// 防抖的地图更新
+const updateMapDebounced = debounce(updateMap, 150)
 
 function focusPoint(point) {
   const coord = coordOf(point)
@@ -400,6 +630,9 @@ async function saveEdit() {
     return
   }
 
+  if (isLoading.value) return // 防止重复提交
+  
+  isLoading.value = true
   try {
     const { data: resp } = await request.put(`/api/points/${editor.point.id}`, {
       ...editor.point,
@@ -409,13 +642,20 @@ async function saveEdit() {
     if (resp.code === 0) {
       alert('坐标更新成功')
       closeEdit()
-      reload()
+      // 更新本地数据，避免重新加载所有数据
+      const index = rawPoints.value.findIndex(p => p.id === editor.point.id)
+      if (index >= 0) {
+        rawPoints.value[index].location = `${editor.lat},${editor.lon}`
+      }
+      await updateMapDebounced()
     } else {
       alert(resp.msg || '更新失败')
     }
   } catch (error) {
     console.error('更新坐标失败:', error)
     alert('更新失败，请检查网络连接')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -425,6 +665,9 @@ async function saveAdd() {
     return
   }
 
+  if (isLoading.value) return // 防止重复提交
+  
+  isLoading.value = true
   try {
     const { data: resp } = await request.post('/api/points', {
       name: adder.name,
@@ -441,22 +684,35 @@ async function saveAdd() {
       adder.lat = null
       adder.lon = null
       adder.riverBasin = ''
-      reload()
+      // 添加到本地数据，避免重新加载
+      rawPoints.value.push(resp.data)
+      rawPoints.value.sort((a,b) => a.id - b.id)
+      await updateMapDebounced()
     } else {
       alert(resp.msg || '创建失败')
     }
   } catch (error) {
     console.error('创建监测点失败:', error)
     alert('创建失败，请检查网络连接')
+  } finally {
+    isLoading.value = false
   }
 }
+
+// 防抖的地图点击处理
+const debouncedMapClick = debounce((e) => {
+  if (editor.show && editor.pickOnMap) {
+    editor.lat = e.latlng.lat
+    editor.lon = e.latlng.lng
+  }
+}, 100)
 
 // --- 生命周期 ---
 onMounted(async () => {
   // 初始化地图
   map = L.map(mapEl.value, {
-    center: [39.9042, 116.4074], // 北京
-    zoom: 10,
+    center: [34.5, 104.0], // 初始值不再关键，将在更新时自适应
+    zoom: 4,
     zoomControl: true,
   })
 
@@ -483,12 +739,16 @@ onMounted(async () => {
     adder.show = true
   })
 
-  // 编辑模式下的地图点击
-  map.on('click', (e) => {
-    if (editor.show && editor.pickOnMap) {
-      editor.lat = e.latlng.lat
-      editor.lon = e.latlng.lng
-    }
+  // 编辑模式下的地图点击（使用防抖）
+  map.on('click', debouncedMapClick)
+
+  // 添加watcher来监听筛选变化
+  watch(filteredKeyword, () => {
+    updateMapDebounced()
+  })
+
+  watch(filterOnlyOnMap, () => {
+    updateMapDebounced()
   })
 
   await reload()
@@ -500,3 +760,18 @@ onBeforeUnmount(() => {
   }
 })
 </script>
+
+<style>
+/* 彩色小圆点标注（用于按级别着色） */
+.marker-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 2px #fff;
+}
+.marker-dot.ok { background: #10b981; }   /* 正常：绿 */
+.marker-dot.l1 { background: #facc15; }   /* L1：黄 */
+.marker-dot.l2 { background: #f97316; }   /* L2：橙 */
+.marker-dot.l3 { background: #ef4444; }   /* L3：红 */
+.marker-dot.l4 { background: #7e22ce; }   /* L4：紫 */
+</style>

@@ -280,11 +280,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import request from '../utils/request'
 
 /** --- 状态 --- */
+const route = useRoute()
+const router = useRouter()
 const points = ref([])
 const pointId = ref('')
 const chartRef = ref(null)
@@ -310,13 +313,28 @@ const stats = ref(null)
 /** --- 生命周期 --- */
 onMounted(async () => {
   await loadPoints()
-  if (!pointId.value && points.value.length) pointId.value = points.value[0].id
+  // 如果 URL 带了 pointId，则优先使用
+  const qid = route.query.pointId
+  if (qid) {
+    pointId.value = String(qid)
+  } else if (!pointId.value && points.value.length) {
+    pointId.value = points.value[0].id
+  }
   await query()
   window.addEventListener('resize', resize)
 })
 onBeforeUnmount(() => {
   if (chart) chart.dispose()
   window.removeEventListener('resize', resize)
+})
+
+// 监听路由变化（例如从 GIS 点击不同点位再进入）
+watch(() => route.query.pointId, (val) => {
+  if (val) {
+    pointId.value = String(val)
+    // 不自动触发查询，避免频繁请求；如需自动，可解除下一行注释
+    // query()
+  }
 })
 
 /** --- 方法区 --- */
