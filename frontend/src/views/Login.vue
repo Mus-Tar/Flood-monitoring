@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
     <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
-      <!-- 标题 -->
+      <!-- 登录标题 -->
       <div class="text-center mb-8">
         <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">洪水监测系统</h1>
+        <h1 class="text-2xl font-bold text-gray-900">智慧水务洪水监测预警系统</h1>
         <p class="text-gray-600 mt-2">请登录以访问系统功能</p>
       </div>
 
@@ -156,9 +156,8 @@ const onSubmit = async () => {
         localStorage.removeItem('rememberedUsername')
       }
       
-      // 跳转到适当页面：管理员到用户管理，普通用户到预警列表
-      const userRole = data.data.role || 'USER'
-      router.push(userRole === 'ADMIN' ? '/users' : '/warnings')
+      // 跳转到GIS页面
+      router.push('/gis')
     } else {
       alert(data.msg || '登录失败')
     }

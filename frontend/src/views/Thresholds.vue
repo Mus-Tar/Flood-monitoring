@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
     <div class="max-w-7xl mx-auto">
-      <!-- 页面标题 -->
+      <!-- 阈值配置页面标题 -->
       <div class="mb-6">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -11,14 +11,14 @@
           </div>
           <h1 class="text-2xl font-bold text-gray-900">阈值配置</h1>
         </div>
-        <p class="text-gray-600">配置各监测点的告警阈值，实现智能预警</p>
+        <p class="text-gray-600">配置各监测点的预警事件阈值，实现智能预警</p>
       </div>
 
       <!-- 主内容卡片 -->
       <div class="bg-white rounded-lg shadow-xl p-6">
         <!-- 操作栏 -->
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-semibold text-gray-900">阈值管理</h2>
+          <h2 class="text-lg font-semibold text-gray-900">阈值配置</h2>
           <button 
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm" 
             @click="openAdd"
@@ -184,7 +184,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">告警级别</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">预警级别</label>
                 <select 
                   v-model.number="form.level" 
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -223,23 +223,23 @@
             
             <!-- 级别说明 -->
             <div class="bg-gray-50 rounded-lg p-4">
-              <h4 class="text-sm font-medium text-gray-700 mb-2">告警级别说明</h4>
+              <h4 class="text-sm font-medium text-gray-700 mb-2">预警级别说明</h4>
               <div class="space-y-1 text-xs text-gray-600">
                 <div class="flex items-center gap-2">
                   <span class="inline-block w-2 h-2 bg-green-400 rounded-full"></span>
-                  <span><strong>1级</strong> - 轻微告警，需要关注</span>
+                  <span><strong>1级</strong> - 轻微预警，需要关注</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="inline-block w-2 h-2 bg-yellow-400 rounded-full"></span>
-                  <span><strong>2级</strong> - 一般告警，需要处理</span>
+                  <span><strong>2级</strong> - 一般预警，需要处理</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="inline-block w-2 h-2 bg-orange-400 rounded-full"></span>
-                  <span><strong>3级</strong> - 严重告警，紧急处理</span>
+                  <span><strong>3级</strong> - 严重预警，紧急处理</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="inline-block w-2 h-2 bg-red-400 rounded-full"></span>
-                  <span><strong>4级</strong> - 紧急告警，立即处理</span>
+                  <span><strong>4级</strong> - 紧急预警，立即处理</span>
                 </div>
               </div>
             </div>

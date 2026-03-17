@@ -15,32 +15,32 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/warnings")
+@RequestMapping("/api/warnings") // 预警事件管理接口
 public class WarningEventController {
 
     @Resource
-    private WarningEventService service;
+    private WarningEventService service; // 预警事件服务
     @Resource
-    private MonitoringPointService pointService;
+    private MonitoringPointService pointService; // 监测点服务
 
     @GetMapping
     public R list(@RequestParam(required = false) Long pointId,
                   @RequestParam(required = false) String status) {
 
+        // 构建预警事件查询条件
         QueryWrapper<WarningEvent> qw = new QueryWrapper<>();
         if (pointId != null) qw.eq("point_id", pointId);
         if (status != null && !status.isEmpty() && !"ALL".equalsIgnoreCase(status)) {
             qw.eq("status", status);
         }
-        
-        // 只显示触发时间在当前时间之前（或等于当前时间）的预警事件
-        // 过滤掉未来的预警事件
+
+        // 仅查询已触发的历史与当前预警事件
         qw.le("trigger_time", LocalDateTime.now());
-        
-        // 按触发时间降序排列，最接近现在的时间（最新发生的）排在最上面
         qw.orderByDesc("trigger_time");
+
         List<WarningEvent> list = service.list(qw);
 
+        // 转换为前端展示用对象
         List<WarningEventVO> vos = list.stream().map(e -> {
             WarningEventVO vo = new WarningEventVO();
             vo.setId(e.getId());
@@ -59,7 +59,9 @@ public class WarningEventController {
     }
 
     @PutMapping("/{id}/confirm")
-    public R confirm(@PathVariable Long id, @RequestParam(required = false) String user) {
+    public R confirm(@PathVariable Long id,
+                     @RequestParam(required = false) String user) {
+        // 确认预警事件
         WarningEvent ev = service.getById(id);
         if (ev == null) return R.error("事件不存在");
         ev.setStatus("已确认");
@@ -69,7 +71,9 @@ public class WarningEventController {
     }
 
     @PutMapping("/{id}/resolve")
-    public R resolve(@PathVariable Long id, @RequestParam(required = false) String user) {
+    public R resolve(@PathVariable Long id,
+                     @RequestParam(required = false) String user) {
+        // 解除预警事件
         WarningEvent ev = service.getById(id);
         if (ev == null) return R.error("事件不存在");
         ev.setStatus("已解除");
@@ -78,9 +82,9 @@ public class WarningEventController {
         return R.ok(ev);
     }
 
-    /** 新增：删除预警事件 */
     @DeleteMapping("/{id}")
     public R delete(@PathVariable Long id) {
+        // 删除指定预警事件
         boolean ok = service.removeById(id);
         return ok ? R.ok() : R.error("删除失败或事件不存在");
     }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
 
+// 用户管理控制器，提供用户信息的增删改查接口
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -22,12 +23,14 @@ public class UserController {
         return R.ok(list);
     }
 
+    // 新增用户
     @PostMapping
     public R add(@RequestBody User u) {
         userService.save(u);
         return R.ok(u);
     }
 
+    // 编辑用户
     @PutMapping("/{id}")
     public R update(@PathVariable Long id, @RequestBody User u) {
         u.setId(id);
@@ -35,6 +38,7 @@ public class UserController {
         return R.ok(u);
     }
 
+    // 删除用户
     @DeleteMapping("/{id}")
     public R del(@PathVariable Long id) {
         userService.removeById(id);

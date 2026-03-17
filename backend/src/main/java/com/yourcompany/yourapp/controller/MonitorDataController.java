@@ -14,30 +14,33 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/monitor-data")
+@RequestMapping("/api/monitor-data") // 监测数据管理接口
 public class MonitorDataController {
 
     @Resource
-    private MonitorDataService service;
+    private MonitorDataService service; // 监测数据服务
 
     @GetMapping
     public R list(@RequestParam Long pointId,
-                  @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-                  @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end) {
+                  @RequestParam(required = false)
+                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                  @RequestParam(required = false)
+                  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end) {
+
+        // 查询指定监测点的历史数据
         QueryWrapper<MonitorData> qw = new QueryWrapper<>();
         qw.eq("point_id", pointId);
         if (start != null) qw.ge("timestamp", start);
         if (end != null) qw.le("timestamp", end);
         qw.orderByAsc("timestamp");
+
         List<MonitorData> list = service.list(qw);
         return R.ok(list);
     }
 
-    /**
-     * 批量删除监测点数据
-     */
     @DeleteMapping("/batch")
     public R batchDelete(@RequestBody List<Long> pointIds) {
+        // 批量删除指定监测点的历史数据
         if (pointIds == null || pointIds.isEmpty()) {
             return R.error("请选择要删除数据的监测点");
         }
@@ -48,13 +51,9 @@ public class MonitorDataController {
         for (Long pointId : pointIds) {
             QueryWrapper<MonitorData> qw = new QueryWrapper<>();
             qw.eq("point_id", pointId);
-            
-            // 先统计要删除的数量
             long count = service.count(qw);
             deletedCounts.put(pointId, (int) count);
             totalDeleted += count;
-            
-            // 删除数据
             service.remove(qw);
         }
 
@@ -66,11 +65,9 @@ public class MonitorDataController {
         return R.ok(result);
     }
 
-    /**
-     * 获取监测点数据统计
-     */
     @GetMapping("/count-by-points")
     public R getDataCountByPoints(@RequestParam List<Long> pointIds) {
+        // 统计各监测点数据量
         Map<Long, Integer> counts = new HashMap<>();
         int total = 0;
 

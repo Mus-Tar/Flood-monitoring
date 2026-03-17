@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
     <div class="max-w-md w-full space-y-8">
-      <!-- 头部 -->
+      <!-- 注册界面头部 -->
       <div class="text-center">
         <div class="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
           <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9,7 +9,7 @@
           </svg>
         </div>
         <h2 class="text-3xl font-bold text-gray-900 mb-2">创建新账户</h2>
-        <p class="text-gray-600">加入洪水监测系统，开始您的工作</p>
+        <p class="text-gray-600">加入智慧水务洪水监测预警系统，开始您的工作</p>
       </div>
 
       <!-- 注册表单 -->

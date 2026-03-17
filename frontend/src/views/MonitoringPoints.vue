@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
     <div class="max-w-7xl mx-auto">
-      <!-- 页面标题 -->
+      <!-- 监测点管理页面标题 -->
       <div class="mb-6">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -12,7 +12,7 @@
           </div>
           <h1 class="text-2xl font-bold text-gray-900">监测点管理</h1>
         </div>
-        <p class="text-gray-600">管理洪水监测系统中的各个监测点配置</p>
+        <p class="text-gray-600">管理智慧水务洪水监测预警系统中的各个监测点配置</p>
       </div>
 
       <!-- 主内容卡片 -->

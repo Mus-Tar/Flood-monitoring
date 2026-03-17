@@ -4,7 +4,7 @@
 
       <!-- 数据导入卡片 -->6">
     <div class="max-w-6xl mx-auto">
-      <!-- 页面标题 -->
+      <!-- 数据导入页面标题 -->
       <div class="mb-6">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -14,7 +14,7 @@
           </div>
           <h1 class="text-2xl font-bold text-gray-900">数据导入</h1>
         </div>
-        <p class="text-gray-600">批量导入监测站点的时序数据，支持 CSV 和 Excel 格式</p>
+        <p class="text-gray-600">批量导入监测点的时序数据，支持 CSV 和 Excel 格式</p>
       </div>
 
       <!-- 使用说明卡片 -->
@@ -92,24 +92,6 @@
         </div>
       </div>
     <h2 class="text-lg font-semibold">数据导入（CSV / Excel）</h2>
-
-    <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded space-y-2">
-      <p class="text-sm">请先在“监测点管理”新增站点，再在此选择站点导入其时序数据。</p>
-      <p class="text-sm">
-        必填列：<code>timestamp, water_level, rainfall</code>；可选列：<code>flow</code>；
-        时间格式 <code>yyyy-MM-dd HH:mm:ss</code>。
-      </p>
-
-      <details class="text-sm">
-        <summary class="cursor-pointer">点击展开：CSV 模板（复制到本地文件，例如 monitor_data_template.csv）</summary>
-        <pre class="bg-white border rounded p-2 overflow-auto text-xs mt-2">timestamp,water_level,rainfall,flow
-2025-09-10 08:00:00,1.23,0.00,0.56
-2025-09-10 09:00:00,1.35,2.40,0.61
-2025-09-10 10:00:00,1.50,3.20,0.73
-2025-09-10 11:00:00,1.62,1.10,0.69
-</pre>
-      </details>
-    </div>
 
       <!-- 数据导入卡片 -->
       <div class="bg-white rounded-lg shadow-xl">

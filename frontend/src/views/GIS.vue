@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
     <div class="max-w-7xl mx-auto">
-      <!-- 页面标题 -->
+      <!-- GIS地图页面标题 -->
       <div class="mb-6">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -10,7 +10,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900">GIS地理信息系统</h1>
+          <h1 class="text-2xl font-bold text-gray-900">GIS地图</h1>
         </div>
         <p class="text-gray-600">管理监测点位置信息，可视化展示地理分布</p>
       </div>
@@ -239,7 +239,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
           </svg>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900">在地图处新增监测点</h3>
+        <h3 class="text-lg font-semibold text-gray-900">新增监测点</h3>
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -279,7 +279,7 @@
           />
         </div>
         <div class="col-span-2">
-          <label class="block text-sm font-medium text-gray-700 mb-2">流域（可选）</label>
+          <label class="block text-sm font-medium text-gray-700 mb-2">流域</label>
           <input 
             v-model="adder.riverBasin" 
             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
@@ -298,7 +298,7 @@
           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           @click="saveAdd"
         >
-          创建监测点
+          保存
         </button>
       </div>
     </div>

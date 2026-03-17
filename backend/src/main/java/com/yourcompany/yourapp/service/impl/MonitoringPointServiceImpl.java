@@ -6,8 +6,10 @@ import com.yourcompany.yourapp.mapper.MonitoringPointMapper;
 import com.yourcompany.yourapp.service.MonitoringPointService;
 import org.springframework.stereotype.Service;
 
+// 监测点业务实现类
 @Service
 public class MonitoringPointServiceImpl
         extends ServiceImpl<MonitoringPointMapper, MonitoringPoint>
         implements MonitoringPointService {
+    // 实现监测点相关业务逻辑
 }

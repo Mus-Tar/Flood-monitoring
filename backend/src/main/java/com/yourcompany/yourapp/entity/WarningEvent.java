@@ -10,16 +10,19 @@ import java.time.LocalDateTime;
 
 @Data
 @TableName("warning_event")
+// 预警事件记录实体
 public class WarningEvent {
+
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private Long id;                 // 主键ID
 
-    private Long pointId;      // DB: point_id
-    private Integer level;     // 触发级别
-    private Double triggerValue;
+    private Long pointId;            // 监测点ID
+    private Integer level;           // 触发的预警等级（预警级别）
+    private Double triggerValue;     // 实际触发数值
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime triggerTime;
+    private LocalDateTime triggerTime; // 触发时间
 
-    private String status;     // 未处理 / 已确认 / 已解除
-    private String handledBy;
+    private String status;           // 处理状态
+    private String handledBy;        // 处理人
 }

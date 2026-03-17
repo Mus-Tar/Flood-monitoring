@@ -10,19 +10,20 @@ import java.time.LocalDateTime;
 
 @Data
 @TableName("monitor_data")
+// 监测点采集数据实体
 public class MonitorData {
-    @TableId(type = IdType.AUTO)
-    private Long id;
 
-    private Long pointId; // 监测点ID（DB列：point_id）
+    @TableId(type = IdType.AUTO)
+    private Long id;                 // 主键ID
+
+    private Long pointId;            // 所属监测点ID
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp; // 数据采集时间
 
-    private Double waterLevel;   // 水位（米）
-    private Double rainfall;     // 降雨量（毫米）
-    private Double flow;         // 流量（可选，m^3/s）
+    private Double waterLevel;       // 水位值
+    private Double rainfall;         // 降雨量
+    private Double flow;             // 流量数据（可选）
 
-    /** 其他参数（DB是 JSON，我们这先用String接，前端用不上可以先忽略） */
-    private String otherParams;
+    private String otherParams;      // 其他扩展参数（JSON字符串）
 }

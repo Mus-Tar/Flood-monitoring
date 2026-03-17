@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white p-4 rounded-lg shadow space-y-4">
-    <!-- 标题 + 状态 -->
+    <!-- 预测工作台：用于展示监测数据的历史段与“预测段”（预测段当前由已有数据模拟） -->
     <div class="flex items-center justify-between">
       <h2 class="text-lg font-semibold">预测工作台</h2>
       <div class="text-xs" :class="status.ok ? 'text-green-600' : 'text-gray-500'">
@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <!-- 条件区（已精简：去掉模型、噪声、步长等） -->
+    <!-- 条件区：选择监测点、预测起点与时间窗（预测用于演示） -->
     <div class="grid md:grid-cols-4 gap-4">
       <div>
         <label class="block text-sm mb-1">监测点</label>
@@ -23,7 +23,7 @@
       <div>
         <label class="block text-sm mb-1">预测起点（含）</label>
         <input type="datetime-local" v-model="forecastStartLocal" class="w-full border rounded px-3 py-2"/>
-        <p class="text-xs text-gray-500 mt-1">起点之前为历史，之后即为“预测”。</p>
+        <p class="text-xs text-gray-500 mt-1">起点之前视为历史数据，之后时间段作为预测展示。</p>
       </div>
 
       <div>
@@ -42,7 +42,7 @@
           <span class="px-1 py-2 text-gray-400">至</span>
           <input type="datetime-local" v-model="windowEndLocal" class="w-full border rounded px-3 py-2"/>
         </div>
-        <p class="text-xs text-gray-500 mt-1">建议覆盖“预测起点前48h ~ 预测起点后{{ horizonHours }}h”。</p>
+        <p class="text-xs text-gray-500 mt-1">时间窗内数据用于支撑历史与预测区段的展示。</p>
       </div>
 
       <div>
@@ -56,7 +56,9 @@
 
       <div class="flex items-end">
         <div class="ml-auto flex gap-2">
-          <button class="px-3 py-2 bg-gray-100 border rounded" @click="quickRange(48)">历史48h + 未来{{ horizonHours }}h</button>
+          <button class="px-3 py-2 bg-gray-100 border rounded" @click="quickRange(48)">
+            历史48h + 未来{{ horizonHours }}h
+          </button>
           <button class="px-3 py-2 bg-blue-600 text-white rounded" @click="runPredict" :disabled="status.loading">
             {{ status.loading ? '加载中…' : '加载数据并生成预测' }}
           </button>
@@ -64,10 +66,10 @@
       </div>
     </div>
 
-    <!-- 图表 -->
+    <!-- 折线图：历史数据为实线，预测展示段为虚线 -->
     <div ref="chartRef" class="w-full" style="height: 460px;"></div>
 
-    <!-- 简要指标（基于“未来段”本身） -->
+    <!-- 指标统计：直接基于预测展示段（已有数据） -->
     <div class="grid md:grid-cols-3 gap-4">
       <div class="border rounded p-3">
         <div class="text-sm text-gray-500">水位(m)</div>
@@ -89,12 +91,15 @@
       </div>
     </div>
 
-    <!-- 预测明细（= 未来段明细） -->
+    <!-- 预测明细：列出预测时间段内的已有监测数据 -->
     <div class="border rounded">
-      <div class="px-3 py-2 bg-gray-50 font-medium flex items-center justify-between cursor-pointer" @click="detailExpanded = !detailExpanded">
+      <div class="px-3 py-2 bg-gray-50 font-medium flex items-center justify-between cursor-pointer"
+           @click="detailExpanded = !detailExpanded">
         <span>预测明细</span>
-        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': detailExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': detailExpanded }"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7"></path>
         </svg>
       </div>
       <div class="overflow-auto" v-show="detailExpanded">
@@ -125,7 +130,7 @@
       </div>
     </div>
 
-    <!-- 文本总结 -->
+    <!-- 文本总结：基于预测展示段生成 -->
     <div class="border rounded p-3 text-sm leading-6">
       <div class="font-medium mb-1">预测总结</div>
       <p v-if="summaryText">{{ summaryText }}</p>
@@ -139,27 +144,31 @@ import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
 import request from '../utils/request'
 
-/** ====== 状态 ====== */
+// 页面状态控制
 const status = reactive({ loading: false, ok: false, text: '' })
 
+// 监测点相关
 const points = ref([])
 const pointId = ref('')
 
+// 预测起点与预测时长（预测仅为展示用途）
 const forecastStartLocal = ref(toLocalInput(roundUpToHour(new Date())))
 const horizonHours = ref(24)
 
+// 数据查询时间窗
 const windowStartLocal = ref(toLocalInput(new Date(Date.now() - 48*3600*1000)))
 const windowEndLocal   = ref(toLocalInput(new Date(Date.now() + 24*3600*1000)))
 
+// 显示变量控制
 const show = reactive({ waterLevel: true, rainfall: true, flow: false })
 
 const chartRef = ref(null)
 let chart = null
 
-// 数据容器
-let rows = []                 // 全部数据（历史+未来）
-let hist = { wl: [], rf: [], fl: [] }   // 历史（<= 起点）
-let future = { wl: [], rf: [], fl: [] } // 未来（> 起点）= 预测
+// 数据容器：rows 为接口原始数据，future 为预测展示段
+let rows = []
+let hist = { wl: [], rf: [], fl: [] }
+let future = { wl: [], rf: [], fl: [] }
 
 // 指标与表格
 const metrics = reactive({
@@ -170,10 +179,10 @@ const metrics = reactive({
 const tableRows = ref([])
 const summaryText = ref('')
 
-// 预测明细折叠状态
+// 预测明细展开状态
 const detailExpanded = ref(false)
 
-/** ====== 生命周期 ====== */
+// 生命周期初始化
 onMounted(async () => {
   await loadPoints()
   if (!pointId.value && points.value.length) pointId.value = points.value[0].id
@@ -185,7 +194,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', resize)
 })
 
-/** ====== 主流程 ====== */
+// 主流程：加载数据并生成预测展示
 async function runPredict() {
   if (!pointId.value) { alert('请选择监测点'); return }
   status.loading = true
@@ -193,24 +202,16 @@ async function runPredict() {
   status.text = '加载中…'
   try {
     await loadMonitorData()
-
-    status.text = rows.length
-        ? `已加载 ${rows.length} 条记录`
-        : '接口未返回数据，请检查接口或调整时间窗。'
-
-    splitPastFuture()
-    buildMetrics()
-    buildTable()
-    renderChart()
-    buildSummary()
-
+    splitPastFuture()      // 按预测起点拆分历史与预测展示段
+    buildMetrics()         // 基于预测展示段统计指标
+    buildTable()           // 构建预测明细表
+    renderChart()          // 渲染历史与预测对比图
+    buildSummary()         // 生成预测文字说明
     status.ok = true
+    status.text = rows.length ? `已加载 ${rows.length} 条记录` : '接口未返回数据'
   } catch (err) {
-    console.error('[forecast] runPredict error:', err)
-    status.ok = false
-    status.text = '渲染失败：' + (err?.message || err)
+    status.text = '加载失败'
   } finally {
-    // 不管成功还是失败，都关掉“加载中…”
     status.loading = false
   }
 }

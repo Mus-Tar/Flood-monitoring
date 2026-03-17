@@ -12,20 +12,21 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/points")
+@RequestMapping("/api/points") // 监测点管理接口
 public class MonitoringPointController {
 
     @Resource
-    private MonitoringPointService service;
+    private MonitoringPointService service; // 监测点业务服务
 
     @Resource
-    private MonitorDataService monitorDataService;
+    private MonitorDataService monitorDataService; // 监测数据服务
 
     @GetMapping
     public R list(@RequestParam(required = false) String keyword) {
+        // 查询监测点列表，支持关键字模糊搜索
         QueryWrapper<MonitoringPoint> qw = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
-            // 依据你的字段：name / type / location / river_basin / sensor_model
+            // 按监测点名称、类型、位置、流域、传感器型号匹配
             qw.like("name", keyword)
                     .or().like("type", keyword)
                     .or().like("location", keyword)
@@ -39,12 +40,14 @@ public class MonitoringPointController {
 
     @PostMapping
     public R add(@RequestBody MonitoringPoint p) {
+        // 新增监测点
         service.save(p);
         return R.ok(p);
     }
 
     @PutMapping("/{id}")
     public R update(@PathVariable Long id, @RequestBody MonitoringPoint p) {
+        // 更新监测点基础信息
         p.setId(id);
         service.updateById(p);
         return R.ok(p);
@@ -52,7 +55,7 @@ public class MonitoringPointController {
 
     @DeleteMapping("/{id}")
     public R del(@PathVariable Long id) {
-        // 你的外键没有 ON DELETE CASCADE，需先删子表数据
+        // 删除监测点前先清除其历史监测数据
         monitorDataService.remove(new QueryWrapper<MonitorData>().eq("point_id", id));
         service.removeById(id);
         return R.ok();

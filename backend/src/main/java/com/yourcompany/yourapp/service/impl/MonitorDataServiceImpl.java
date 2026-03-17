@@ -6,7 +6,10 @@ import com.yourcompany.yourapp.mapper.MonitorDataMapper;
 import com.yourcompany.yourapp.service.MonitorDataService;
 import org.springframework.stereotype.Service;
 
+// 监测数据业务实现类
 @Service
-public class MonitorDataServiceImpl extends ServiceImpl<MonitorDataMapper, MonitorData>
+public class MonitorDataServiceImpl
+        extends ServiceImpl<MonitorDataMapper, MonitorData>
         implements MonitorDataService {
+    // 继承通用业务方法
 }

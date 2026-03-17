@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
     <div class="max-w-7xl mx-auto space-y-6">
-      <!-- 页面标题 -->
+      <!-- 历史数据页面标题 -->
       <div class="mb-6">
         <div class="flex items-center gap-3 mb-2">
           <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -9,9 +9,9 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900">历史数据分析</h1>
+          <h1 class="text-2xl font-bold text-gray-900">历史数据</h1>
         </div>
-        <p class="text-gray-600">查看监测点的历史数据趋势图，分析变化规律</p>
+        <p class="text-gray-600">查看监测点的历史数据图，分析变化规律</p>
       </div>
 
       <!-- 查询条件卡片 -->
@@ -143,7 +143,7 @@
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4"></path>
             </svg>
-            <h2 class="text-lg font-semibold text-gray-900">趋势分析图</h2>
+            <h2 class="text-lg font-semibold text-gray-900">历史数据图</h2>
           </div>
           <div v-if="data.length" class="text-sm text-gray-500">
             数据点数: {{ data.length }}
