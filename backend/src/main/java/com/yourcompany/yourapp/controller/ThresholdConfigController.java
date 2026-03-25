@@ -1,6 +1,7 @@
 package com.yourcompany.yourapp.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.yourcompany.yourapp.annotation.RequireRole;
 import com.yourcompany.yourapp.entity.ThresholdConfig;
 import com.yourcompany.yourapp.service.ThresholdConfigService;
 import com.yourcompany.yourapp.util.R;
@@ -29,6 +30,7 @@ public class ThresholdConfigController {
     }
 
     @PostMapping
+    @RequireRole("ADMIN")
     public R add(@RequestBody ThresholdConfig cfg) {
         // 新增阈值配置
         service.save(cfg);
@@ -36,6 +38,7 @@ public class ThresholdConfigController {
     }
 
     @PutMapping("/{id}")
+    @RequireRole("ADMIN")
     public R update(@PathVariable Long id, @RequestBody ThresholdConfig cfg) {
         // 更新阈值配置
         cfg.setId(id);
@@ -44,6 +47,7 @@ public class ThresholdConfigController {
     }
 
     @DeleteMapping("/{id}")
+    @RequireRole("ADMIN")
     public R del(@PathVariable Long id) {
         // 删除指定阈值配置
         service.removeById(id);

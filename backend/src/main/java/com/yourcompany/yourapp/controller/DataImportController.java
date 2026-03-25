@@ -1,5 +1,6 @@
 package com.yourcompany.yourapp.controller;
 
+import com.yourcompany.yourapp.annotation.RequireRole;
 import com.yourcompany.yourapp.entity.MonitorData;
 import com.yourcompany.yourapp.entity.MonitoringPoint;
 import com.yourcompany.yourapp.service.MonitorDataService;
@@ -35,6 +36,7 @@ public class DataImportController {
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @PostMapping
+    @RequireRole("ADMIN")
     public R importForOnePoint(@RequestParam Long pointId,
                                @RequestParam MultipartFile file) throws IOException {
         // 向指定监测点导入历史监测数据

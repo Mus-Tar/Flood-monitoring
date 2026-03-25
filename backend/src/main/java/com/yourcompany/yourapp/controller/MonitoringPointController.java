@@ -1,6 +1,7 @@
 package com.yourcompany.yourapp.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.yourcompany.yourapp.annotation.RequireRole;
 import com.yourcompany.yourapp.entity.MonitorData;
 import com.yourcompany.yourapp.entity.MonitoringPoint;
 import com.yourcompany.yourapp.service.MonitorDataService;
@@ -39,6 +40,7 @@ public class MonitoringPointController {
     }
 
     @PostMapping
+    @RequireRole("ADMIN")
     public R add(@RequestBody MonitoringPoint p) {
         // 新增监测点
         service.save(p);
@@ -46,6 +48,7 @@ public class MonitoringPointController {
     }
 
     @PutMapping("/{id}")
+    @RequireRole("ADMIN")
     public R update(@PathVariable Long id, @RequestBody MonitoringPoint p) {
         // 更新监测点基础信息
         p.setId(id);
@@ -54,6 +57,7 @@ public class MonitoringPointController {
     }
 
     @DeleteMapping("/{id}")
+    @RequireRole("ADMIN")
     public R del(@PathVariable Long id) {
         // 删除监测点前先清除其历史监测数据
         monitorDataService.remove(new QueryWrapper<MonitorData>().eq("point_id", id));

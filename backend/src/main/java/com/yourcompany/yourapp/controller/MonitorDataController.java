@@ -1,6 +1,7 @@
 package com.yourcompany.yourapp.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.yourcompany.yourapp.annotation.RequireRole;
 import com.yourcompany.yourapp.entity.MonitorData;
 import com.yourcompany.yourapp.service.MonitorDataService;
 import com.yourcompany.yourapp.util.R;
@@ -39,6 +40,7 @@ public class MonitorDataController {
     }
 
     @DeleteMapping("/batch")
+    @RequireRole("ADMIN")
     public R batchDelete(@RequestBody List<Long> pointIds) {
         // 批量删除指定监测点的历史数据
         if (pointIds == null || pointIds.isEmpty()) {

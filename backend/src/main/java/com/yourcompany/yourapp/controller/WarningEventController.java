@@ -1,6 +1,7 @@
 package com.yourcompany.yourapp.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.yourcompany.yourapp.annotation.RequireRole;
 import com.yourcompany.yourapp.dto.WarningEventVO;
 import com.yourcompany.yourapp.entity.MonitoringPoint;
 import com.yourcompany.yourapp.entity.WarningEvent;
@@ -59,6 +60,7 @@ public class WarningEventController {
     }
 
     @PutMapping("/{id}/confirm")
+    @RequireRole({"ADMIN", "USER"})
     public R confirm(@PathVariable Long id,
                      @RequestParam(required = false) String user) {
         // 确认预警事件
@@ -71,6 +73,7 @@ public class WarningEventController {
     }
 
     @PutMapping("/{id}/resolve")
+    @RequireRole({"ADMIN", "USER"})
     public R resolve(@PathVariable Long id,
                      @RequestParam(required = false) String user) {
         // 解除预警事件
@@ -83,6 +86,7 @@ public class WarningEventController {
     }
 
     @DeleteMapping("/{id}")
+    @RequireRole("ADMIN")
     public R delete(@PathVariable Long id) {
         // 删除指定预警事件
         boolean ok = service.removeById(id);

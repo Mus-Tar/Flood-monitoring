@@ -17,3 +17,10 @@ mybatis-plus:
 
 app:
   upload-dir: ./uploads
+
+auth:
+  jwt:
+    secret: change-this-to-a-long-random-secret-key-at-least-32-bytes
+    access-token-expire-minutes: 30
+    refresh-token-expire-days: 7
+    issuer: flood-monitoring

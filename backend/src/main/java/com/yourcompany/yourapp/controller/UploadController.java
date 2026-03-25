@@ -1,5 +1,6 @@
 package com.yourcompany.yourapp.controller;
 
+import com.yourcompany.yourapp.annotation.RequireRole;
 import com.yourcompany.yourapp.util.R;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,7 @@ public class UploadController {
 
     // 接收前端上传的单个文件并保存到服务器
     @PostMapping
+    @RequireRole("ADMIN")
     public R upload(MultipartFile file) throws IOException {
         // 校验文件是否为空
         if (file == null || file.isEmpty()) {
